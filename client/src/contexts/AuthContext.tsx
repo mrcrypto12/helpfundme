@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUser = useCallback(async () => {
     try {
-      const { data } = await api.get('/auth/session');
+      const { data } = await api.get('/auth/me');
       setUser(data.user);
     } catch {
       setUser(null);

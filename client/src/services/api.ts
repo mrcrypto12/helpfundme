@@ -1,13 +1,12 @@
 import axios from 'axios';
 
 const configuredApiUrl = (
-  import.meta.env.DEV
-    ? (import.meta.env.VITE_API_URL || 'http://localhost:5000')
-    : '/api'
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? 'http://localhost:5000' : 'https://helpfundme.onrender.com')
 ).replace(/\/+$/, '');
 
 // Accept either https://host or https://host/api in VITE_API_URL.
-export const API_URL = configuredApiUrl === '/api' || /\/api$/i.test(configuredApiUrl)
+export const API_URL = /\/api$/i.test(configuredApiUrl)
   ? configuredApiUrl
   : `${configuredApiUrl}/api`;
 
