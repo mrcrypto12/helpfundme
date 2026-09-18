@@ -30,7 +30,7 @@ const MapView: React.FC = () => {
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1>🗺️ Ghana Community Map</h1>
+        <h1>Location base</h1>
         <p>See where help is being requested across the country. Tap a region to browse its campaigns.</p>
       </div>
 

@@ -98,7 +98,7 @@ const MyPostsPage: React.FC = () => {
 
       {posts.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">📝</div>
+          <div className="empty-state-icon">˙◠˙</div>
           <h3>No posts yet</h3>
           <p>Create your first help post and let people know how they can support you.</p>
           <button className="btn btn-primary" onClick={() => navigate('/posts/create')}>Create a Post</button>

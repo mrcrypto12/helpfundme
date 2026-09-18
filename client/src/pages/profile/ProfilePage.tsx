@@ -49,7 +49,7 @@ const ProfilePage: React.FC = () => {
 
       {badges.length > 0 && (
         <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-          <h3 style={{ marginBottom: 12, fontSize: '0.95rem' }}>🏅 Badges Earned</h3>
+          <h3 style={{ marginBottom: 12, fontSize: '0.95rem' }}>Badges Earned</h3>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {badges.map((b) => {
               const meta = BADGE_META[b];

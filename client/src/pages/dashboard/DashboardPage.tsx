@@ -6,10 +6,10 @@ import { formatCurrency, timeAgo } from '../../utils/helpers';
 import { HiOutlineMapPin, HiOutlineEye, HiOutlineHeart, HiOutlineUsers } from 'react-icons/hi2';
 
 const QUICK_FILTERS = [
-  { label: '🎯 Nearing Goal', sort: 'almost-funded', severity: 'all' },
-  { label: '🆕 Recently Created', sort: 'newest', severity: 'all' },
-  { label: '🔥 Most Popular', sort: 'popular', severity: 'all' },
-  { label: '🚨 Critical', sort: 'newest', severity: 'critical' },
+  { label: 'Nearing Goal', sort: 'almost-funded', severity: 'all' },
+  { label: 'Recently Created', sort: 'newest', severity: 'all' },
+  { label: 'Most Popular', sort: 'popular', severity: 'all' },
+  { label: 'Critical', sort: 'newest', severity: 'critical' },
 ];
 
 const DashboardPage: React.FC = () => {
