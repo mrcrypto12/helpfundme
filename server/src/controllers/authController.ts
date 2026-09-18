@@ -214,8 +214,7 @@ export const googleCallback = async (req: AuthRequest, res: Response): Promise<v
     });
 
     // Redirect to frontend with token in URL (short-lived, frontend extracts and stores)
-    res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${accessToken}`);
-  } catch (error) {
+    res.redirect(`${process.env.CLIENT_URL}/login?token=${accessToken}`);  } catch (error) {
     console.error('Google callback error:', error);
     res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
   }
