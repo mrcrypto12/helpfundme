@@ -38,7 +38,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Remove access tokens left by older deployments. Authentication now uses
     // HttpOnly cookies that JavaScript cannot read.
-    localStorage.removeItem('accessToken');
     fetchUser();
   }, [fetchUser]);
 
