@@ -318,7 +318,7 @@ const PostDetailPage: React.FC = () => {
           </div>
           {post.beneficiary?.name && (
             <div style={{ marginTop: 10, padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              🙋 Raised on behalf of <strong>{post.beneficiary.name}</strong> ({post.beneficiary.relationship})
+              Raised on behalf of <strong>{post.beneficiary.name}</strong> ({post.beneficiary.relationship})
               {post.beneficiary.verified && <span style={{ color: 'var(--primary-light)' }}> · ✓ Verified</span>}
             </div>
           )}
@@ -587,7 +587,7 @@ const PostDetailPage: React.FC = () => {
         <div className="modal-overlay" onClick={() => setShowDonateModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>💚 Make a Donation</h2>
+              <h2>Make a Donation</h2>
               <button className="modal-close" onClick={() => setShowDonateModal(false)}>✕</button>
             </div>
             <div className="modal-body">
@@ -597,7 +597,7 @@ const PostDetailPage: React.FC = () => {
 
               {remaining > 0 && remaining <= 500 && (
                 <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'var(--primary-soft)', borderRadius: 'var(--radius-md)', fontSize: '0.85rem', color: 'var(--primary-light)' }}>
-                  🎯 Only {formatCurrency(remaining)} left to reach the goal!
+                  Only {formatCurrency(remaining)} left to reach the goal!
                 </div>
               )}
 

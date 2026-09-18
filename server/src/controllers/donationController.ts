@@ -104,7 +104,7 @@ const checkMilestones = async (post: any, donorName: string) => {
       const notifType = isComplete ? 'campaign_completed' : 'campaign_milestone';
       const title = isComplete
         ? `🎉 "${post.title}" reached its goal!`
-        : `🎯 "${post.title}" is now ${milestone}% funded!`;
+        : `"${post.title}" is now ${milestone}% funded!`;
       const message = isComplete
         ? `Amazing news! The fundraiser has reached its target of ₵${post.targetAmount.toLocaleString()}. Thank you for your support!`
         : `The campaign has reached ${milestone}% of its ₵${post.targetAmount.toLocaleString()} goal. Keep sharing!`;
@@ -125,7 +125,7 @@ const checkMilestones = async (post: any, donorName: string) => {
         type: notifType,
         title: isComplete
           ? `🎉 Your fundraiser "${post.title}" reached its goal!`
-          : `🎯 Your fundraiser is ${milestone}% funded!`,
+          : `Your fundraiser is ${milestone}% funded!`,
         message,
         relatedPost: post._id,
       });
@@ -135,7 +135,7 @@ const checkMilestones = async (post: any, donorName: string) => {
         author: post.author,
         content: isComplete
           ? `🎉 Campaign goal reached! ₵${post.amountRaised.toLocaleString()} raised from ${post.donorsCount} donors.`
-          : `🎯 ${milestone}% milestone reached! ₵${post.amountRaised.toLocaleString()} raised so far.`,
+          : `${milestone}% milestone reached! ₵${post.amountRaised.toLocaleString()} raised so far.`,
         type: isComplete ? 'completion' : 'milestone',
       });
     }
@@ -270,7 +270,7 @@ export const verifyDonation = async (req: Request, res: Response): Promise<void>
           await Notification.create({
             recipient: post.author,
             type: 'donation_received',
-            title: '💚 New donation received!',
+            title: 'New donation received!',
             message: `${donorDisplay} donated ₵${donation.amount.toLocaleString()} to "${post.title}"${donation.message ? ` — "${donation.message}"` : ''}`,
             relatedPost: post._id,
             relatedDonation: donation._id,
