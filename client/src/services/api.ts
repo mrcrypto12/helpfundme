@@ -1,8 +1,14 @@
 import axios from 'axios';
 
-export const API_URL =
+const configuredApiUrl = (
   import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? 'http://localhost:5000/api' : 'https://helpfundme.onrender.com/api');
+  (import.meta.env.DEV ? 'http://localhost:5000' : 'https://helpfundme.onrender.com')
+).replace(/\/+$/, '');
+
+// Accept either https://host or https://host/api in VITE_API_URL.
+export const API_URL = /\/api$/i.test(configuredApiUrl)
+  ? configuredApiUrl
+  : `${configuredApiUrl}/api`;
 
 const api = axios.create({
   baseURL: API_URL,
