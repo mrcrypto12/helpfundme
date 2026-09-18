@@ -182,10 +182,13 @@ export const refreshAccessToken = async (req: Request, res: Response): Promise<v
 // @desc    Google OAuth callback handler
 // @route   GET /api/auth/google/callback
 export const googleCallback = async (req: AuthRequest, res: Response): Promise<void> => {
+  const clientUrl = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
+
   try {
     const user = req.user;
     if (!user) {
-res.redirect(`${process.env.CLIENT_URL}/login`);      return;
+      res.redirect(`${clientUrl}/login?error=google_auth_failed`);
+      return;
     }
 
     // Generate tokens
@@ -212,9 +215,12 @@ res.redirect(`${process.env.CLIENT_URL}/login`);      return;
       path: '/api/auth/refresh',
     });
 
-    // Redirect to frontend with token in URL (short-lived, frontend extracts and stores)
-res.redirect(`${process.env.CLIENT_URL}/login`);    console.error('Google callback error:', error);
-    res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
+    // Redirect to the frontend callback, where the token is stored and removed
+    // from the address bar.
+    res.redirect(`${clientUrl}/auth/callback?token=${encodeURIComponent(accessToken)}`);
+  } catch (error) {
+    console.error('Google callback error:', error);
+    res.redirect(`${clientUrl}/login?error=server_error`);
   }
 };
 

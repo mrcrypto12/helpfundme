@@ -14,6 +14,7 @@ import {
 } from '../controllers/authController';
 
 const router = Router();
+const clientUrl = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
 
 // Public auth routes (rate limited)
 router.post('/register', authLimiter, registerValidation, register);
@@ -28,7 +29,10 @@ router.get(
 
 router.get(
   '/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+  passport.authenticate('google', {
+    session: false,
+    failureRedirect: `${clientUrl}/login?error=google_auth_failed`,
+  }),
   googleCallback
 );
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '../services/api';
+import api, { API_URL } from '../services/api';
 import { IUser } from '../types';
 
 interface AuthContextType {
@@ -80,8 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const googleLogin = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    window.location.href = `${apiUrl}/auth/google`;
+    window.location.href = `${API_URL}/auth/google`;
   };
 
   const updateUser = (data: Partial<IUser>) => {
