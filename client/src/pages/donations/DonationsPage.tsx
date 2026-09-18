@@ -153,7 +153,7 @@ const DonationsPage: React.FC = () => {
       {tab === 'my' && (
         myDonations.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state-icon">💝</div>
+            <div className="empty-state-icon"></div>
             <h3>No donations yet</h3>
             <p>When you make your first donation, it will appear here. Start by browsing help posts!</p>
             <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>Browse Posts</button>

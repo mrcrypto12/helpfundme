@@ -419,7 +419,7 @@ const PostDetailPage: React.FC = () => {
 
             {post.isSurgery && post.surgeryDetails && (
               <div className="detail-section">
-                <h3>🏥 Surgery Details</h3>
+                <h3>Surgery Details</h3>
                 <div className="info-box">
                   <div className="info-box-row">
                     <span className="info-box-label">Hospital</span>
@@ -486,7 +486,7 @@ const PostDetailPage: React.FC = () => {
             )}
 
             <div className="detail-section">
-              <h3>📖 Campaign Story</h3>
+              <h3>Campaign Story</h3>
               <CampaignTimeline updates={updates} />
             </div>
 
@@ -543,7 +543,7 @@ const PostDetailPage: React.FC = () => {
 
                 {!isCompleted && remaining > 0 && (
                   <div className="gap-display">
-                    🎯 {formatCurrency(remaining)} needed to complete this goal
+                    {formatCurrency(remaining)} needed to complete this goal
                   </div>
                 )}
                 {isCompleted && (
@@ -555,7 +555,7 @@ const PostDetailPage: React.FC = () => {
 
               {!isCompleted && (
                 <button className="btn btn-primary btn-block btn-lg" onClick={() => setShowDonateModal(true)} style={{ marginBottom: '12px' }}>
-                  💚 Donate Now
+                  Donate Now
                 </button>
               )}
               <button className="btn btn-outline btn-block" onClick={handleShare}>

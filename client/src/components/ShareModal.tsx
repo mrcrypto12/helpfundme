@@ -47,14 +47,14 @@ const ShareModal: React.FC<ShareModalProps> = ({
   const shareOptions = [
     {
       name: 'WhatsApp',
-      icon: '💬',
+      icon: '✆',
       color: '#25D366',
       url: `https://wa.me/?text=${encodeURIComponent(`${shareText}\n\n${campaignUrl}`)}`,
       prominent: true,
     },
     {
       name: 'Facebook',
-      icon: '📘',
+      icon: 'ⓕ',
       color: '#1877F2',
       url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(campaignUrl)}&quote=${encodeURIComponent(shareText)}`,
     },
@@ -66,13 +66,13 @@ const ShareModal: React.FC<ShareModalProps> = ({
     },
     {
       name: 'Email',
-      icon: '✉️',
+      icon: '✉',
       color: '#EA4335',
       url: `mailto:?subject=${encodeURIComponent(`Help support: ${title}`)}&body=${encodeURIComponent(`${shareText}\n\n${campaignUrl}`)}`,
     },
     {
       name: 'Telegram',
-      icon: '✈️',
+      icon: '⌯⌲',
       color: '#0088cc',
       url: `https://t.me/share/url?url=${encodeURIComponent(campaignUrl)}&text=${encodeURIComponent(shareText)}`,
     },
@@ -82,7 +82,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 440 }}>
         <div className="modal-header">
-          <h2>📤 Share this fundraiser</h2>
+          <h2>Share this fundraiser</h2>
           <button className="modal-close" onClick={onClose}>
             <HiOutlineXMark />
           </button>
@@ -139,7 +139,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            💬 Share on WhatsApp
+            Share on WhatsApp
           </a>
 
           {/* Other share options */}
