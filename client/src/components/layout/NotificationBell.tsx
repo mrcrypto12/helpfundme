@@ -202,11 +202,11 @@ const NotificationBell: React.FC = () => {
                     padding: '12px 16px',
                     cursor: 'pointer',
                     borderBottom: '1px solid var(--border)',
-                    background: notif.isRead ? 'transparent' : 'rgba(27, 138, 42, 0.05)',
+                    background: notif.isRead ? 'transparent' : 'var(--unread-overlay)',
                     transition: 'background 0.15s ease',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = notif.isRead ? 'transparent' : 'rgba(27, 138, 42, 0.05)')}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--hover-overlay)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = notif.isRead ? 'transparent' : 'var(--unread-overlay)')}
                 >
                   <span style={{ fontSize: '1.3rem', flexShrink: 0 }}>
                     {getNotifIcon(notif.type)}

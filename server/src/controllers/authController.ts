@@ -203,6 +203,11 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   }
 };
 
+// Return the current session without treating a signed-out visitor as an error.
+export const getSession = async (req: AuthRequest, res: Response): Promise<void> => {
+  res.json({ user: req.user || null });
+};
+
 // @desc    Update user profile
 // @route   PUT /api/auth/profile
 export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {

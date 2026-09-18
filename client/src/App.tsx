@@ -83,9 +83,9 @@ const App: React.FC = () => {
           position="top-right"
           toastOptions={{
             style: {
-              background: '#1E2536',
-              color: '#F0F2F5',
-              border: '1px solid #232A3B',
+              background: 'var(--bg-elevated)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border)',
               fontFamily: 'Inter, sans-serif',
             },
           }}

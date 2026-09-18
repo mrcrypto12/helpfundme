@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { randomBytes, timingSafeEqual } from 'crypto';
 import passport from '../config/passport';
-import { protect } from '../middleware/auth';
+import { optionalAuth, protect } from '../middleware/auth';
 import { authLimiter } from '../middleware/rateLimiter';
 import { registerValidation, loginValidation } from '../middleware/validate';
 import {
@@ -10,6 +10,7 @@ import {
   refreshAccessToken,
   googleCallback,
   getMe,
+  getSession,
   updateProfile,
   logout,
 } from '../controllers/authController';
@@ -29,6 +30,7 @@ const oauthStateCookieOptions = {
 router.post('/register', authLimiter, registerValidation, register);
 router.post('/login', authLimiter, loginValidation, login);
 router.post('/refresh', refreshAccessToken);
+router.get('/session', optionalAuth, getSession);
 
 // Google OAuth routes
 router.get(
