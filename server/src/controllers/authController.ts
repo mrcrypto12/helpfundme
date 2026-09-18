@@ -185,8 +185,7 @@ export const googleCallback = async (req: AuthRequest, res: Response): Promise<v
   try {
     const user = req.user;
     if (!user) {
-      res.redirect(`${process.env.CLIENT_URL}/login?error=auth_failed`);
-      return;
+res.redirect(`${process.env.CLIENT_URL}/login`);      return;
     }
 
     // Generate tokens
@@ -214,8 +213,7 @@ export const googleCallback = async (req: AuthRequest, res: Response): Promise<v
     });
 
     // Redirect to frontend with token in URL (short-lived, frontend extracts and stores)
-    res.redirect(`${process.env.CLIENT_URL}/login?token=${accessToken}`);  } catch (error) {
-    console.error('Google callback error:', error);
+res.redirect(`${process.env.CLIENT_URL}/login`);    console.error('Google callback error:', error);
     res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
   }
 };
