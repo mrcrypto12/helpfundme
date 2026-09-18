@@ -38,12 +38,12 @@ app.use(
   })
 );
 
+app.use(cookieParser());
 app.use(globalLimiter);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use(cookieParser());
 
 // Authentication responses must never be cached by browsers or shared proxies.
 app.use('/api', (_req, res, next) => {
