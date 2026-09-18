@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getInitials } from '../../utils/helpers';
 import NotificationBell from './NotificationBell';
-import ThemeToggle from './ThemeToggle';
 import {
   HiOutlineMagnifyingGlass,
   HiOutlineBars3, HiOutlineUser,
@@ -62,7 +61,6 @@ const Navbar: React.FC<NavbarProps> = ({ collapsed, onMobileToggle }) => {
       </div>
 
       <div className="navbar-right">
-        <ThemeToggle />
         <NotificationBell />
 
         <div ref={dropdownRef} style={{ position: 'relative' }}>

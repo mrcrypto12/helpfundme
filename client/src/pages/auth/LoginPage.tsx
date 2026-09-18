@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import ThemeToggle from '../../components/layout/ThemeToggle';
 
 const LoginPage: React.FC = () => {
   const { login, googleLogin } = useAuth();
@@ -31,7 +30,6 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="auth-page">
-      <ThemeToggle className="auth-theme-toggle" />
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
