@@ -45,6 +45,26 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(cookieParser());
 
+// Authentication responses must never be cached by browsers or shared proxies.
+app.use('/api', (_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  next();
+});
+
+// Validate the browser origin for state-changing cookie-authenticated requests.
+app.use('/api', (req, res, next) => {
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) return next();
+
+  const origin = req.get('origin');
+  const allowedOrigin = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
+  if (origin && origin.replace(/\/$/, '') !== allowedOrigin) {
+    res.status(403).json({ message: 'Invalid request origin' });
+    return;
+  }
+  next();
+});
+
 app.use(mongoSanitize());
 
 app.use(hpp());

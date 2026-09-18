@@ -26,15 +26,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUser = useCallback(async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
       const { data } = await api.get('/auth/me');
       setUser(data.user);
     } catch {
-      localStorage.removeItem('accessToken');
       setUser(null);
     } finally {
       setLoading(false);
@@ -42,30 +36,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
+    // Remove access tokens left by older deployments. Authentication now uses
+    // HttpOnly cookies that JavaScript cannot read.
+    localStorage.removeItem('accessToken');
     fetchUser();
-  }, [fetchUser]);
-
-  // Handle Google OAuth callback token
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    if (token) {
-      localStorage.setItem('accessToken', token);
-      // Clean URL
-      window.history.replaceState({}, '', window.location.pathname);
-      fetchUser();
-    }
   }, [fetchUser]);
 
   const login = async (email: string, password: string) => {
     const { data } = await api.post('/auth/login', { email, password });
-    localStorage.setItem('accessToken', data.accessToken);
     setUser(data.user);
   };
 
   const register = async (name: string, email: string, password: string) => {
     const { data } = await api.post('/auth/register', { name, email, password });
-    localStorage.setItem('accessToken', data.accessToken);
     setUser(data.user);
   };
 
@@ -75,7 +58,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Continue logout even if API call fails
     }
-    localStorage.removeItem('accessToken');
     setUser(null);
   };
 

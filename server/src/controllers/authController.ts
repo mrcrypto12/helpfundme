@@ -1,8 +1,23 @@
-import { Request, Response } from 'express';
+import { createHash } from 'crypto';
+import { CookieOptions, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/token';
+
+const isProduction = process.env.NODE_ENV === 'production';
+const baseCookieOptions: CookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
+};
+const accessCookieOptions: CookieOptions = { ...baseCookieOptions, maxAge: 15 * 60 * 1000 };
+const refreshCookieOptions: CookieOptions = {
+  ...baseCookieOptions,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/api/auth/refresh',
+};
+const hashToken = (token: string): string => createHash('sha256').update(token).digest('hex');
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -31,29 +46,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const refreshToken = generateRefreshToken(user);
 
     // Save refresh token
-    user.refreshToken = refreshToken;
+    user.refreshToken = hashToken(refreshToken);
     await user.save();
 
     // Set cookies
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/api/auth/refresh',
-    });
+    res.cookie('accessToken', accessToken, accessCookieOptions);
+    res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
     res.status(201).json({
       message: 'Account created successfully',
       user: user.toJSON(),
-      accessToken,
     });
   } catch (error: any) {
     console.error('Register error:', error);
@@ -100,29 +102,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const refreshToken = generateRefreshToken(user);
 
     // Save refresh token
-    user.refreshToken = refreshToken;
+    user.refreshToken = hashToken(refreshToken);
     await user.save();
 
     // Set cookies
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/api/auth/refresh',
-    });
+    res.cookie('accessToken', accessToken, accessCookieOptions);
+    res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
     res.json({
       message: 'Login successful',
       user: user.toJSON(),
-      accessToken,
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -134,7 +123,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 // @route   POST /api/auth/refresh
 export const refreshAccessToken = async (req: Request, res: Response): Promise<void> => {
   try {
-    const token = req.cookies?.refreshToken || req.body.refreshToken;
+    const token = req.cookies?.refreshToken;
 
     if (!token) {
       res.status(401).json({ message: 'No refresh token provided' });
@@ -145,7 +134,7 @@ export const refreshAccessToken = async (req: Request, res: Response): Promise<v
     const decoded = verifyRefreshToken(token);
     const user = await User.findById(decoded.id).select('+refreshToken');
 
-    if (!user || user.refreshToken !== token) {
+    if (!user || user.refreshToken !== hashToken(token)) {
       res.status(401).json({ message: 'Invalid refresh token' });
       return;
     }
@@ -155,25 +144,13 @@ export const refreshAccessToken = async (req: Request, res: Response): Promise<v
     const newRefreshToken = generateRefreshToken(user);
 
     // Update stored refresh token
-    user.refreshToken = newRefreshToken;
+    user.refreshToken = hashToken(newRefreshToken);
     await user.save();
 
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000,
-    });
+    res.cookie('accessToken', accessToken, accessCookieOptions);
+    res.cookie('refreshToken', newRefreshToken, refreshCookieOptions);
 
-    res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/api/auth/refresh',
-    });
-
-    res.json({ accessToken });
+    res.json({ message: 'Token refreshed' });
   } catch (error) {
     res.status(401).json({ message: 'Invalid or expired refresh token' });
   }
@@ -196,28 +173,15 @@ export const googleCallback = async (req: AuthRequest, res: Response): Promise<v
     const refreshToken = generateRefreshToken(user);
 
     // Save refresh token
-    user.refreshToken = refreshToken;
+    user.refreshToken = hashToken(refreshToken);
     await user.save();
 
     // Set cookies
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000,
-    });
+    res.cookie('accessToken', accessToken, accessCookieOptions);
+    res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/api/auth/refresh',
-    });
-
-    // Redirect to the frontend callback, where the token is stored and removed
-    // from the address bar.
-    res.redirect(`${clientUrl}/auth/callback?token=${encodeURIComponent(accessToken)}`);
+    // Tokens remain in HttpOnly cookies and never enter URLs or browser storage.
+    res.redirect(`${clientUrl}/auth/callback`);
   } catch (error) {
     console.error('Google callback error:', error);
     res.redirect(`${clientUrl}/login?error=server_error`);
@@ -270,8 +234,8 @@ export const logout = async (req: AuthRequest, res: Response): Promise<void> => 
       await User.findByIdAndUpdate(req.user._id, { refreshToken: '' });
     }
 
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+    res.clearCookie('accessToken', baseCookieOptions);
+    res.clearCookie('refreshToken', { ...baseCookieOptions, path: '/api/auth/refresh' });
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error during logout' });

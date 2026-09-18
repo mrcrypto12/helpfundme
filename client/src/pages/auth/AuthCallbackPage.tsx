@@ -1,22 +1,16 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const AuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      localStorage.setItem('accessToken', token);
-      // The AuthContext will pick up the token and fetch user
-      setTimeout(() => navigate('/dashboard'), 500);
-    } else {
+    if (!loading && !user) {
       navigate('/login?error=auth_failed');
     }
-  }, [searchParams, navigate]);
+  }, [loading, user, navigate]);
 
   useEffect(() => {
     if (user) navigate('/dashboard');
