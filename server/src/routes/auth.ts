@@ -16,10 +16,11 @@ import {
 
 const router = Router();
 const clientUrl = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 const oauthStateCookie = 'googleOAuthState';
 const oauthStateCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
+  secure: isProduction,
   sameSite: 'lax' as const,
   maxAge: 10 * 60 * 1000,
   path: '/api/auth/google/callback',

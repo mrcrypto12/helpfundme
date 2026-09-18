@@ -5,7 +5,7 @@ import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/token';
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 const baseCookieOptions: CookieOptions = {
   httpOnly: true,
   secure: isProduction,
@@ -56,6 +56,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json({
       message: 'Account created successfully',
       user: user.toJSON(),
+      accessToken,
     });
   } catch (error: any) {
     console.error('Register error:', error);
@@ -112,6 +113,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.json({
       message: 'Login successful',
       user: user.toJSON(),
+      accessToken,
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -150,7 +152,7 @@ export const refreshAccessToken = async (req: Request, res: Response): Promise<v
     res.cookie('accessToken', accessToken, accessCookieOptions);
     res.cookie('refreshToken', newRefreshToken, refreshCookieOptions);
 
-    res.json({ message: 'Token refreshed' });
+    res.json({ accessToken });
   } catch (error) {
     res.status(401).json({ message: 'Invalid or expired refresh token' });
   }
@@ -180,8 +182,9 @@ export const googleCallback = async (req: AuthRequest, res: Response): Promise<v
     res.cookie('accessToken', accessToken, accessCookieOptions);
     res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
-    // Tokens remain in HttpOnly cookies and never enter URLs or browser storage.
-    res.redirect(`${clientUrl}/auth/callback`);
+    // Fragments are not sent in HTTP requests or Referer headers. The client
+    // removes this fragment immediately and stores the token for this tab only.
+    res.redirect(`${clientUrl}/auth/callback#token=${encodeURIComponent(accessToken)}`);
   } catch (error) {
     console.error('Google callback error:', error);
     res.redirect(`${clientUrl}/login?error=server_error`);

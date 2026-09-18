@@ -18,6 +18,13 @@ const api = axios.create({
   },
 });
 
+// Attach the short-lived access token kept only for this browser tab.
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('accessToken');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 // Request interceptor — attach access token
 // Response interceptor — handle token refresh
 api.interceptors.response.use(
@@ -31,14 +38,17 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        await axios.post(
+        const { data } = await axios.post(
           `${API_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );
 
+        sessionStorage.setItem('accessToken', data.accessToken);
+        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
+        sessionStorage.removeItem('accessToken');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

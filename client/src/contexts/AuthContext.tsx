@@ -21,7 +21,15 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<IUser | null>(null);
+  const [user, setUser] = useState<IUser | null>(() => {
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const token = params.get('token');
+    if (token) {
+      sessionStorage.setItem('accessToken', token);
+      window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
 
   const fetchUser = useCallback(async () => {
@@ -36,18 +44,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    // Remove access tokens left by older deployments. Authentication now uses
-    // HttpOnly cookies that JavaScript cannot read.
     fetchUser();
   }, [fetchUser]);
 
   const login = async (email: string, password: string) => {
     const { data } = await api.post('/auth/login', { email, password });
+    sessionStorage.setItem('accessToken', data.accessToken);
     setUser(data.user);
   };
 
   const register = async (name: string, email: string, password: string) => {
     const { data } = await api.post('/auth/register', { name, email, password });
+    sessionStorage.setItem('accessToken', data.accessToken);
     setUser(data.user);
   };
 
@@ -57,6 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Continue logout even if API call fails
     }
+    sessionStorage.removeItem('accessToken');
     setUser(null);
   };
 
