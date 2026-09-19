@@ -67,7 +67,7 @@ const PostManagementPage: React.FC = () => {
         <div className="loader-container"><div className="loader" /></div>
       ) : posts.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">📋</div>
+          <div className="empty-state-icon"></div>
           <h3>No posts found</h3>
           <p>There are no posts with this status.</p>
         </div>

@@ -20,7 +20,7 @@ router.post('/webhook', paystackWebhook);
 // Public routes
 router.get('/stats', getDonationStats);
 router.get('/post/:postId', getPostDonations);
-router.get('/verify/:reference', verifyDonation);
+router.post('/verify/:reference', protect, donationLimiter, verifyDonation);
 
 // Protected routes
 router.post('/initialize', protect, donationLimiter, donationValidation, initializeDonation);

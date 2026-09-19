@@ -178,7 +178,7 @@ const NotificationBell: React.FC = () => {
                 </div>
               ) : notifications.length === 0 ? (
                 <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: 8 }}>🔔</div>
+                  <div style={{ fontSize: '2rem', marginBottom: 8 }}></div>
                   No notifications yet
                 </div>
               ) : (

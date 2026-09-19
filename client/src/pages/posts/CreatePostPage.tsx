@@ -343,7 +343,7 @@ const CreatePostPage: React.FC = () => {
               </button>
             ) : (
               <button className="btn btn-primary btn-lg" onClick={handleSubmit} disabled={loading}>
-                {loading ? 'Submitting...' : '🚀 Submit Post'}
+                {loading ? 'Submitting...' : 'Submit Post'}
               </button>
             )}
           </div>

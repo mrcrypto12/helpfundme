@@ -2,11 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import mongoSanitize from 'express-mongo-sanitize';
 import hpp from 'hpp';
 import dotenv from 'dotenv';
 
 import connectDB from './config/db';
+import { validateEnvironment } from './config/env';
 import './config/passport';
 
 import { globalLimiter } from './middleware/rateLimiter';
@@ -25,6 +25,8 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+app.disable('x-powered-by');
+app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS || 1));
 
 const CLIENT_URL = (
   process.env.CLIENT_URL || 'http://localhost:5173'
@@ -32,14 +34,40 @@ const CLIENT_URL = (
 
 // ==================== Security Middleware ====================
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      baseUri: ["'none'"],
+      formAction: ["'none'"],
+    },
+  },
+  crossOriginResourcePolicy: { policy: 'same-site' },
+  referrerPolicy: { policy: 'no-referrer' },
+}));
+
+// Optional origin lock. In Cloudflare add a Transform Rule that sets this
+// secret header, then block direct-origin traffic at the host/firewall too.
+app.use((req, res, next) => {
+  const expected = process.env.CLOUDFLARE_ORIGIN_SECRET;
+  if (process.env.NODE_ENV === 'production' && expected && req.get('x-origin-verify') !== expected) {
+    res.status(403).json({ message: 'Direct origin access is not allowed' });
+    return;
+  }
+  if (process.env.NODE_ENV === 'production' && process.env.CLOUDFLARE_REQUIRE_RAY === 'true' && !req.get('cf-ray')) {
+    res.status(403).json({ message: 'Requests must pass through Cloudflare' });
+    return;
+  }
+  next();
+});
 
 app.use(
   cors({
     origin: CLIENT_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type'],
   })
 );
 
@@ -48,8 +76,13 @@ app.use(cookieParser());
 
 app.use(globalLimiter);
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({
+  limit: '1mb',
+  verify: (req, _res, buffer) => {
+    (req as express.Request & { rawBody?: Buffer }).rawBody = Buffer.from(buffer);
+  },
+}));
+app.use(express.urlencoded({ extended: true, limit: '1mb', parameterLimit: 100 }));
 
 // ==================== API Security ====================
 
@@ -65,11 +98,13 @@ app.use('/api', (req, res, next) => {
     return next();
   }
 
+  // Paystack is server-to-server and authenticates with an HMAC signature.
+  if (req.path === '/donations/webhook') return next();
+
   const origin = req.get('origin');
 
   if (
-    origin &&
-    origin.replace(/\/$/, '') !== CLIENT_URL
+    !origin || origin.replace(/\/$/, '') !== CLIENT_URL
   ) {
     res.status(403).json({
       message: 'Invalid request origin',
@@ -80,7 +115,6 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-app.use(mongoSanitize());
 app.use(hpp());
 
 // ==================== API Routes ====================
@@ -138,19 +172,7 @@ app.use(
       return;
     }
 
-    if (err.name === 'ValidationError') {
-      const messages = Object.values(err.errors).map(
-        (e: any) => e.message
-      );
-
-      res.status(400).json({
-        message: 'Validation error',
-        errors: messages,
-      });
-      return;
-    }
-
-    if (err.code === 11000) {
+    if (err.code === '23505') {
       res.status(400).json({
         message: 'Duplicate field value',
       });
@@ -170,6 +192,7 @@ app.use(
 
 const startServer = async () => {
   try {
+    validateEnvironment();
     await connectDB();
 
     app.listen(PORT, () => {

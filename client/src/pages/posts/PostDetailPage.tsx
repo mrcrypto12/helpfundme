@@ -77,7 +77,7 @@ const PostDetailPage: React.FC = () => {
 
   const verifyPayment = async (reference: string) => {
     try {
-      const { data } = await api.get(`/donations/verify/${reference}`);
+      const { data } = await api.post(`/donations/verify/${reference}`);
       if (data.donation.paymentStatus === 'success') {
         toast.success('🎉 Donation successful! Thank you for your generosity!');
       } else {
@@ -445,7 +445,7 @@ const PostDetailPage: React.FC = () => {
 
             {post.fundBreakdown && post.fundBreakdown.length > 0 && (
               <div className="detail-section">
-                <h3>💰 Where Your Money Goes</h3>
+                <h3> Where Your Money Goes</h3>
                 <div className="info-box">
                   {post.fundBreakdown.map((item, i) => {
                     const pct = post.targetAmount > 0 ? Math.round((item.amount / post.targetAmount) * 100) : 0;

@@ -25,6 +25,12 @@ const oauthStateCookieOptions = {
   maxAge: 10 * 60 * 1000,
   path: '/api/auth/google/callback',
 };
+const oauthStateClearOptions = {
+  httpOnly: oauthStateCookieOptions.httpOnly,
+  secure: oauthStateCookieOptions.secure,
+  sameSite: oauthStateCookieOptions.sameSite,
+  path: oauthStateCookieOptions.path,
+};
 
 // Public auth routes (rate limited)
 router.post('/register', authLimiter, registerValidation, register);
@@ -46,7 +52,7 @@ router.get(
   (req, res, next) => {
     const expected = req.cookies?.[oauthStateCookie];
     const received = typeof req.query.state === 'string' ? req.query.state : '';
-    res.clearCookie(oauthStateCookie, oauthStateCookieOptions);
+    res.clearCookie(oauthStateCookie, oauthStateClearOptions);
 
     const valid =
       typeof expected === 'string' &&

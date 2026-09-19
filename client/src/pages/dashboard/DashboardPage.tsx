@@ -211,7 +211,7 @@ const DashboardPage: React.FC = () => {
         </div>
       ) : posts.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">🔍</div>
+          <div className="empty-state-icon"></div>
           <h3>No posts found</h3>
           <p>There are no help posts matching your filters. Try adjusting your search or be the first to create one!</p>
           <button className="btn btn-primary" onClick={() => navigate('/posts/create')}>Create a Post</button>

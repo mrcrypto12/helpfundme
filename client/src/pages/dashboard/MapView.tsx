@@ -36,7 +36,7 @@ const MapView: React.FC = () => {
 
       {stats.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">🗺️</div>
+          <div className="empty-state-icon"></div>
           <h3>No regional data yet</h3>
           <p>Once campaigns are approved, they'll show up here grouped by region.</p>
         </div>

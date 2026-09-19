@@ -33,7 +33,7 @@ const LoginPage: React.FC = () => {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <div className="auth-logo">H</div>
+            <img className="auth-logo" src="/logos.png" alt="HelpFundMe logo" />
             <h1>Welcome Back</h1>
             <p>Sign in to continue making a difference</p>
           </div>

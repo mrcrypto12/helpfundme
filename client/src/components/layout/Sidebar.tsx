@@ -45,7 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle, mobileOpen, onMo
       <div className={`sidebar-overlay ${mobileOpen ? 'visible' : ''}`} onClick={onMobileClose} />
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-logo">
-          <div className="logo-icon">H</div>
+          <img className="logo-icon" src="/logos.png" alt="HelpFundMe logo" />
           <span className="logo-text">HelpFundMe</span>
         </div>
 

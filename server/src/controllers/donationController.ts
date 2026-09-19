@@ -224,10 +224,20 @@ export const initializeDonation = async (req: AuthRequest, res: Response): Promi
 };
 
 // @desc    Verify payment
-// @route   GET /api/donations/verify/:reference
-export const verifyDonation = async (req: Request, res: Response): Promise<void> => {
+// @route   POST /api/donations/verify/:reference
+export const verifyDonation = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const reference = String(req.params.reference);
+
+    const donation = await Donation.findOne({ paymentRef: reference });
+    if (!donation) {
+      res.status(404).json({ message: 'Donation not found' });
+      return;
+    }
+    if (donation.donor.toString() !== req.user?._id.toString() && req.user?.role !== 'admin') {
+      res.status(403).json({ message: 'Not authorized to verify this donation' });
+      return;
+    }
 
     const paystackResponse = await fetch(
       `${PAYSTACK_BASE_URL}/transaction/verify/${encodeURIComponent(reference)}`,
@@ -235,12 +245,6 @@ export const verifyDonation = async (req: Request, res: Response): Promise<void>
     );
 
     const paystackData = (await paystackResponse.json()) as PaystackVerifyResponse;
-
-    const donation = await Donation.findOne({ paymentRef: reference });
-    if (!donation) {
-      res.status(404).json({ message: 'Donation not found' });
-      return;
-    }
 
     if (donation.paymentStatus === 'success') {
       res.json({ message: 'Payment already verified', donation });
@@ -309,12 +313,21 @@ export const verifyDonation = async (req: Request, res: Response): Promise<void>
 // @route   POST /api/donations/webhook
 export const paystackWebhook = async (req: Request, res: Response): Promise<void> => {
   try {
+    const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
+    const suppliedSignature = req.get('x-paystack-signature') || '';
+    if (!rawBody || !suppliedSignature) {
+      res.status(401).json({ message: 'Missing webhook signature' });
+      return;
+    }
+
     const hash = crypto
       .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY as string)
-      .update(JSON.stringify(req.body))
+      .update(rawBody)
       .digest('hex');
 
-    if (hash !== req.headers['x-paystack-signature']) {
+    const expected = Buffer.from(hash, 'hex');
+    const received = Buffer.from(suppliedSignature, 'hex');
+    if (expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) {
       res.status(401).json({ message: 'Invalid signature' });
       return;
     }

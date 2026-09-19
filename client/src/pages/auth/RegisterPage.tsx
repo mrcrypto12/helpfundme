@@ -40,7 +40,7 @@ const RegisterPage: React.FC = () => {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <div className="auth-logo">H</div>
+            <img className="auth-logo" src="/logos.png" alt="HelpFundMe logo" />
             <h1>Create Account</h1>
             <p>Join HelpFundMe and start making a difference</p>
           </div>

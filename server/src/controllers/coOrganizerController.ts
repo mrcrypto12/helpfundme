@@ -28,7 +28,7 @@ export const inviteCoOrganizer = async (req: AuthRequest, res: Response): Promis
       res.status(400).json({ message: 'You are already the campaign owner' });
       return;
     }
-    const alreadyInvited = post.coOrganizers.some((co) => co.user.toString() === invitee._id.toString());
+    const alreadyInvited = post.coOrganizers.some((co: any) => co.user.toString() === invitee._id.toString());
     if (alreadyInvited) {
       res.status(400).json({ message: 'This user has already been invited' });
       return;
@@ -68,7 +68,7 @@ export const respondToInvite = async (req: AuthRequest, res: Response): Promise<
       return;
     }
 
-    const entry = post.coOrganizers.find((co) => co.user.toString() === req.user?._id.toString());
+    const entry = post.coOrganizers.find((co: any) => co.user.toString() === req.user?._id.toString());
     if (!entry) {
       res.status(404).json({ message: 'No invitation found for you on this post' });
       return;
@@ -97,7 +97,7 @@ export const removeCoOrganizer = async (req: AuthRequest, res: Response): Promis
       return;
     }
 
-    post.coOrganizers = post.coOrganizers.filter((co) => co.user.toString() !== req.params.userId);
+    post.coOrganizers = post.coOrganizers.filter((co: any) => co.user.toString() !== req.params.userId);
     await post.save();
 
     res.json({ message: 'Co-organizer removed', post });

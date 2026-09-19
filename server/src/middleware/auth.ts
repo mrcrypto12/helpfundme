@@ -16,12 +16,8 @@ export const protect = async (
   try {
     let token: string | undefined;
 
-    // Check Authorization header
-    if (req.headers.authorization?.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
-    }
-    // Check cookies
-    else if (req.cookies?.accessToken) {
+    // Accept credentials only from HTTP-only cookies.
+    if (req.cookies?.accessToken) {
       token = req.cookies.accessToken;
     }
 
@@ -63,9 +59,7 @@ export const optionalAuth = async (
   try {
     let token: string | undefined;
 
-    if (req.headers.authorization?.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
-    } else if (req.cookies?.accessToken) {
+    if (req.cookies?.accessToken) {
       token = req.cookies.accessToken;
     }
 

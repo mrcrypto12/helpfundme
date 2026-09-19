@@ -35,7 +35,7 @@ const DonationsPage: React.FC = () => {
 
   const verifyPayment = async (reference: string) => {
     try {
-      const { data } = await api.get(`/donations/verify/${reference}`);
+      const { data } = await api.post(`/donations/verify/${reference}`);
       if (data.donation.paymentStatus === 'success') {
         toast.success('Donation successful! Thank you for your generosity! 🎉');
       } else {

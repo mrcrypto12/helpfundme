@@ -56,7 +56,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json({
       message: 'Account created successfully',
       user: user.toJSON(),
-      accessToken,
     });
   } catch (error: any) {
     console.error('Register error:', error);
@@ -113,7 +112,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.json({
       message: 'Login successful',
       user: user.toJSON(),
-      accessToken,
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -152,7 +150,7 @@ export const refreshAccessToken = async (req: Request, res: Response): Promise<v
     res.cookie('accessToken', accessToken, accessCookieOptions);
     res.cookie('refreshToken', newRefreshToken, refreshCookieOptions);
 
-    res.json({ accessToken });
+    res.status(204).send();
   } catch (error) {
     res.status(401).json({ message: 'Invalid or expired refresh token' });
   }
@@ -182,9 +180,9 @@ export const googleCallback = async (req: AuthRequest, res: Response): Promise<v
     res.cookie('accessToken', accessToken, accessCookieOptions);
     res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
-    // Fragments are not sent in HTTP requests or Referer headers. The client
-    // removes this fragment immediately and stores the token for this tab only.
-    res.redirect(`${clientUrl}/auth/callback#token=${encodeURIComponent(accessToken)}`);
+    // Authentication remains in HTTP-only cookies. No credential is exposed
+    // in the URL, browser storage, or client-side JavaScript.
+    res.redirect(`${clientUrl}/auth/callback`);
   } catch (error) {
     console.error('Google callback error:', error);
     res.redirect(`${clientUrl}/login?error=server_error`);

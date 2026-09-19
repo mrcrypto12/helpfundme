@@ -10,6 +10,9 @@ export const uploadToCloudinary = (
       {
         folder,
         resource_type: 'image',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+        unique_filename: true,
+        overwrite: false,
         transformation: [
           { width: 1200, height: 800, crop: 'limit' },
           { quality: 'auto' },
@@ -32,5 +35,5 @@ export const uploadToCloudinary = (
 };
 
 export const deleteFromCloudinary = async (publicId: string): Promise<void> => {
-  await cloudinary.uploader.destroy(publicId);
+  await cloudinary.uploader.destroy(publicId, { invalidate: true, resource_type: 'image' });
 };

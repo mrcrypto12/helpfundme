@@ -147,7 +147,7 @@ export const updateRefundStatus = async (req: AuthRequest, res: Response): Promi
       await Notification.create({
         recipient: donation.donor,
         type: 'refund',
-        title: '↩️ Your refund has been processed',
+        title: 'Your refund has been processed',
         message: `GHS ${donation.amount.toFixed(2)} has been refunded to your original payment method.`,
       });
     }

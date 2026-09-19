@@ -76,7 +76,7 @@ const AdminDashboardPage: React.FC = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
         {/* Post Breakdown */}
         <div className="card" style={{ padding: '24px' }}>
-          <h3 style={{ marginBottom: '16px', fontSize: '1rem' }}>📋 Post Status Breakdown</h3>
+          <h3 style={{ marginBottom: '16px', fontSize: '1rem' }}> Post Status Breakdown</h3>
           <div className="info-box">
             <div className="info-box-row">
               <span className="info-box-label"><HiOutlineCheckCircle style={{ color: '#66BB6A', verticalAlign: 'middle' }} /> Approved</span>
@@ -99,7 +99,7 @@ const AdminDashboardPage: React.FC = () => {
 
         {/* Donation Breakdown */}
         <div className="card" style={{ padding: '24px' }}>
-          <h3 style={{ marginBottom: '16px', fontSize: '1rem' }}>💰 Donation Breakdown</h3>
+          <h3 style={{ marginBottom: '16px', fontSize: '1rem' }}> Donation Breakdown</h3>
           <div className="info-box">
             <div className="info-box-row">
               <span className="info-box-label"><HiOutlineBanknotes style={{ color: 'var(--gold)', verticalAlign: 'middle' }} /> Direct to Posts</span>
@@ -118,7 +118,7 @@ const AdminDashboardPage: React.FC = () => {
 
         {/* Platform Fund */}
         <div className="card" style={{ padding: '24px' }}>
-          <h3 style={{ marginBottom: '16px', fontSize: '1rem' }}>🏦 Platform Fund</h3>
+          <h3 style={{ marginBottom: '16px', fontSize: '1rem' }}> Platform Fund</h3>
           <div className="info-box">
             <div className="info-box-row">
               <span className="info-box-label">Available Balance</span>

@@ -55,7 +55,7 @@ const RefundManagementPage: React.FC = () => {
         <div className="loader-container"><div className="loader" /></div>
       ) : refunds.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">↩️</div>
+          <div className="empty-state-icon"></div>
           <h3>No refund requests</h3>
           <p>Nothing to review in this category right now.</p>
         </div>

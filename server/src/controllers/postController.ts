@@ -200,7 +200,7 @@ export const updatePost = async (req: AuthRequest, res: Response): Promise<void>
       post.author.toString() === req.user?._id.toString() ||
       req.user?.role === 'admin' ||
       post.coOrganizers.some(
-        (co) => co.user.toString() === req.user?._id.toString() && co.role === 'editor' && co.inviteStatus === 'accepted'
+        (co: any) => co.user.toString() === req.user?._id.toString() && co.role === 'editor' && co.inviteStatus === 'accepted'
       );
 
     if (!canEdit) {
@@ -288,10 +288,10 @@ export const toggleLike = async (req: AuthRequest, res: Response): Promise<void>
     }
 
     const userId = req.user?._id;
-    const isLiked = post.likes.some((id) => id.toString() === userId?.toString());
+    const isLiked = post.likes.some((id: any) => id.toString() === userId?.toString());
 
     if (isLiked) {
-      post.likes = post.likes.filter((id) => id.toString() !== userId?.toString());
+      post.likes = post.likes.filter((id: any) => id.toString() !== userId?.toString());
       post.likesCount = Math.max(0, post.likesCount - 1);
     } else {
       post.likes.push(userId!);
