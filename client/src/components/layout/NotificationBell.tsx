@@ -138,119 +138,154 @@ const NotificationBell: React.FC = () => {
       </button>
 
       {showPanel && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(100% + 8px)',
-          right: 0,
-          width: 380,
-          maxHeight: 480,
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-lg)',
-          zIndex: 300,
-          display: 'flex',
-          flexDirection: 'column',
-          animation: 'slideDown 0.2s ease',
-          overflow: 'hidden',
-        }}>
-          {/* Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '14px 16px',
-            borderBottom: '1px solid var(--border)',
-          }}>
-            <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>Notifications</span>
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAllRead}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--primary-light)',
-                  fontSize: '0.78rem',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
-              >
-                Mark all read
-              </button>
-            )}
-          </div>
+        <>
+          {/* Mobile-only backdrop so the panel reads as a sheet, and taps outside close it */}
+          <div className="notification-backdrop" onClick={() => setShowPanel(false)} />
 
-          {/* List */}
-          <div style={{ overflowY: 'auto', flex: 1 }}>
-            {loading ? (
-              <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                Loading...
-              </div>
-            ) : notifications.length === 0 ? (
-              <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                <div style={{ fontSize: '2rem', marginBottom: 8 }}>🔔</div>
-                No notifications yet
-              </div>
-            ) : (
-              notifications.map((notif) => (
-                <div
-                  key={notif._id}
-                  onClick={() => handleNotificationClick(notif)}
+          <div className="notification-panel">
+            {/* Header */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '14px 16px',
+              borderBottom: '1px solid var(--border)',
+              flexShrink: 0,
+            }}>
+              <span style={{ fontWeight: 600, fontSize: '0.95rem' }}>Notifications</span>
+              {unreadCount > 0 && (
+                <button
+                  onClick={handleMarkAllRead}
                   style={{
-                    display: 'flex',
-                    gap: 12,
-                    padding: '12px 16px',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--primary-light)',
+                    fontSize: '0.78rem',
+                    fontWeight: 500,
                     cursor: 'pointer',
-                    borderBottom: '1px solid var(--border)',
-                    background: notif.isRead ? 'transparent' : 'rgba(27, 138, 42, 0.05)',
-                    transition: 'background 0.15s ease',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = notif.isRead ? 'transparent' : 'rgba(27, 138, 42, 0.05)')}
                 >
-                  <span style={{ fontSize: '1.3rem', flexShrink: 0 }}>
-                    {getNotifIcon(notif.type)}
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontWeight: notif.isRead ? 400 : 600,
-                      fontSize: '0.85rem',
-                      marginBottom: 2,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {notif.title}
-                    </div>
-                    <div style={{
-                      fontSize: '0.78rem',
-                      color: 'var(--text-muted)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {notif.message}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 4 }}>
-                      {timeAgo(notif.createdAt)}
-                    </div>
-                  </div>
-                  {!notif.isRead && (
-                    <div style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      background: 'var(--primary)',
-                      flexShrink: 0,
-                      marginTop: 6,
-                    }} />
-                  )}
+                  Mark all read
+                </button>
+              )}
+            </div>
+
+            {/* List */}
+            <div style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+              {loading ? (
+                <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  Loading...
                 </div>
-              ))
-            )}
+              ) : notifications.length === 0 ? (
+                <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: 8 }}>🔔</div>
+                  No notifications yet
+                </div>
+              ) : (
+                notifications.map((notif) => (
+                  <div
+                    key={notif._id}
+                    onClick={() => handleNotificationClick(notif)}
+                    style={{
+                      display: 'flex',
+                      gap: 12,
+                      padding: '12px 16px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid var(--border)',
+                      background: notif.isRead ? 'transparent' : 'rgba(27, 138, 42, 0.05)',
+                      transition: 'background 0.15s ease',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = notif.isRead ? 'transparent' : 'rgba(27, 138, 42, 0.05)')}
+                  >
+                    <span style={{ fontSize: '1.3rem', flexShrink: 0 }}>
+                      {getNotifIcon(notif.type)}
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontWeight: notif.isRead ? 400 : 600,
+                        fontSize: '0.85rem',
+                        marginBottom: 2,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {notif.title}
+                      </div>
+                      <div style={{
+                        fontSize: '0.78rem',
+                        color: 'var(--text-muted)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {notif.message}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                        {timeAgo(notif.createdAt)}
+                      </div>
+                    </div>
+                    {!notif.isRead && (
+                      <div style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: 'var(--primary)',
+                        flexShrink: 0,
+                        marginTop: 6,
+                      }} />
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
+
+      <style>{`
+        .notification-panel {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          width: 380px;
+          max-width: calc(100vw - 32px);
+          max-height: 480px;
+          background: var(--bg-elevated);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-lg);
+          z-index: 300;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          animation: slideDown 0.2s ease;
+        }
+
+        .notification-backdrop {
+          display: none;
+        }
+
+        @media (max-width: 480px) {
+          .notification-backdrop {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 299;
+          }
+
+          .notification-panel {
+            position: fixed;
+            top: calc(var(--navbar-height, 64px) + 8px);
+            left: 8px;
+            right: 8px;
+            width: auto;
+            max-width: none;
+            max-height: calc(100vh - var(--navbar-height, 64px) - 24px);
+          }
+        }
+      `}</style>
     </div>
   );
 };

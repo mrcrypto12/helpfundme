@@ -72,7 +72,7 @@ const DashboardPage: React.FC = () => {
           <img src={post.images[0]} alt={post.title} className="post-card-image" />
         ) : (
           <div className="post-card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'var(--text-muted)' }}>
-            📋
+            No images uploaded yet
           </div>
         )}
         <div className="post-card-body">
