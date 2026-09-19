@@ -1,4 +1,4 @@
-{
+/*{
   "compilerOptions": {
     "target": "es2023",
     "module": "esnext",
@@ -8,14 +8,37 @@
     "skipLibCheck": true,
     "jsx": "react-jsx",
 
-    /* Bundler mode */
+    /* Bundler mode 
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
 
     "moduleDetection": "force",
     "noEmit": true,
 
-    /* Linting */
+    /* Linting 
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}
+*/
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "allowArbitraryExtensions": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+
+    "moduleDetection": "force",
+    "noEmit": true,
+
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "erasableSyntaxOnly": true,
