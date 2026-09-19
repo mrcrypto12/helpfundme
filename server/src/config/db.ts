@@ -6,9 +6,13 @@ dotenv.config();
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('DATABASE_URL is required (PostgreSQL connection string)');
 
+const useSsl =
+  process.env.DATABASE_SSL === 'true' ||
+  (process.env.DATABASE_SSL !== 'false' && process.env.NODE_ENV === 'production');
+
 export const pool = new Pool({
   connectionString,
-  ssl: process.env.DATABASE_SSL === 'false' ? false : process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: useSsl ? { rejectUnauthorized: false } : false,
   max: Number(process.env.DATABASE_POOL_SIZE || 10),
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 10_000,
