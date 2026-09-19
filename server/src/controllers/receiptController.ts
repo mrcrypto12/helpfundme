@@ -35,13 +35,13 @@ export const getReceipt = async (req: AuthRequest, res: Response): Promise<void>
       currency: donation.currency,
       campaignTitle:
         donation.type === 'platform'
-          ? 'HelpFund GH Platform Fund'
+          ? 'HelpFundMe Platform Fund'
           : (donation.post as any)?.title || 'Help Post',
       type: donation.type,
       transactionId: donation.transactionId,
       paymentRef: donation.paymentRef,
       date: donation.createdAt,
-      platformName: 'HelpFund GH',
+      platformName: 'HelpFundMe',
     };
 
     res.json({ receipt });

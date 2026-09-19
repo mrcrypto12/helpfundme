@@ -42,7 +42,7 @@ const RegisterPage: React.FC = () => {
           <div className="auth-header">
             <div className="auth-logo">H</div>
             <h1>Create Account</h1>
-            <p>Join HelpFund GH and start making a difference</p>
+            <p>Join HelpFundMe and start making a difference</p>
           </div>
 
           <button className="google-btn" onClick={googleLogin} type="button">

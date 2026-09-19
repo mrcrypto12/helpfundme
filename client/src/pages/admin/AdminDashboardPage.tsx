@@ -36,7 +36,7 @@ const AdminDashboardPage: React.FC = () => {
     <div className="page-container">
       <div className="page-header">
         <h1>Admin Dashboard</h1>
-        <p>Overview of the HelpFund GH platform</p>
+        <p>Overview of the HelpFundMe platform</p>
       </div>
 
       <div className="stats-grid">

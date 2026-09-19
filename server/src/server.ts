@@ -100,7 +100,7 @@ app.use('/api/help-offers', helpOfferRoutes);
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'OK',
-    message: 'HelpFund GH API is running',
+    message: 'HelpFundMe API is running',
     timestamp: new Date().toISOString(),
   });
 });
@@ -174,7 +174,7 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(
-        `HelpFund GH API running on port ${PORT} | Environment: ${
+        `HelpFundMe API running on port ${PORT} | Environment: ${
           process.env.NODE_ENV || 'development'
         }`
       );

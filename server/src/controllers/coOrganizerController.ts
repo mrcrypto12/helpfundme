@@ -21,7 +21,7 @@ export const inviteCoOrganizer = async (req: AuthRequest, res: Response): Promis
 
     const invitee = await User.findOne({ email });
     if (!invitee) {
-      res.status(404).json({ message: 'No HelpFund GH user found with that email' });
+      res.status(404).json({ message: 'No HelpFundMe user found with that email' });
       return;
     }
     if (invitee._id.toString() === post.author.toString()) {

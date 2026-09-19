@@ -1,7 +1,7 @@
 {
-  "name": "helpfund-gh-server",
+  "name": "helpfundme-server",
   "version": "1.0.0",
-  "description": "HelpFund GH - Backend API Server",
+  "description": "HelpFundMe - Backend API Server",
   "main": "dist/server.js",
   "scripts": {
     "dev": "npx tsx watch src/server.ts",
