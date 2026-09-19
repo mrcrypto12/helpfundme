@@ -19,7 +19,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, receipt, l
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
         <div className="modal-header">
-          <h2>🧾 Donation Receipt</h2>
+          <h2>Donation Receipt</h2>
           <button className="modal-close" onClick={onClose}><HiOutlineXMark /></button>
         </div>
         <div className="modal-body">

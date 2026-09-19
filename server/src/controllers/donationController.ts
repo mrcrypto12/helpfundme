@@ -361,7 +361,7 @@ export const paystackWebhook = async (req: Request, res: Response): Promise<void
             await Notification.create({
               recipient: post.author,
               type: 'donation_received',
-              title: '💚 New donation received!',
+              title: 'New donation received!',
               message: `Someone donated ₵${donation.amount.toLocaleString()} to "${post.title}"`,
               relatedPost: post._id,
               relatedDonation: donation._id,
