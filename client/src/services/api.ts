@@ -2,12 +2,8 @@ import axios from 'axios';
 
 const configuredApiUrl = (
   import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? 'http://localhost:5000' : '')
+  (import.meta.env.DEV ? 'http://localhost:5000' : window.location.origin)
 ).replace(/\/+$/, '');
-
-if (!configuredApiUrl) {
-  throw new Error('VITE_API_URL must be configured for production builds');
-}
 
 // Accept either https://host or https://host/api in VITE_API_URL.
 export const API_URL = /\/api$/i.test(configuredApiUrl)

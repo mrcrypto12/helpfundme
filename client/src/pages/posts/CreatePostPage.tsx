@@ -30,7 +30,7 @@ const CreatePostPage: React.FC = () => {
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
     maxFiles: 5,
     maxSize: 5 * 1024 * 1024,
-    onDrop: (accepted) => setImages((prev) => [...prev, ...accepted].slice(0, 5)),
+    onDrop: (accepted: File[]) => setImages((prev) => [...prev, ...accepted].slice(0, 5)),
     onDropRejected: () => toast.error('Invalid file. Max 5 images, 5MB each.'),
   });
 

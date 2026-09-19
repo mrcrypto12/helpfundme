@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import hpp from 'hpp';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 
 import connectDB from './config/db';
 import { validateEnvironment } from './config/env';
@@ -37,7 +39,13 @@ const CLIENT_URL = (
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'none'"],
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https:'],
+      imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+      fontSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'"],
+      objectSrc: ["'none'"],
       frameAncestors: ["'none'"],
       baseUri: ["'none'"],
       formAction: ["'none'"],
@@ -138,6 +146,34 @@ app.get('/api/health', (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Unknown API paths must remain JSON responses and must never fall through to
+// the React application shell.
+app.use('/api', (_req, res) => {
+  res.status(404).json({ message: 'API route not found' });
+});
+
+// In production the same Render Web Service serves React and the API. Keeping
+// both on one origin makes HTTP-only authentication cookies reliable on mobile.
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.resolve(__dirname, '../../client/dist');
+  if (!fs.existsSync(path.join(clientDist, 'index.html'))) {
+    throw new Error(`Client build not found at ${clientDist}`);
+  }
+  app.use(express.static(clientDist, {
+    index: false,
+    maxAge: '1d',
+    setHeaders: (res, filePath) => {
+      if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    },
+  }));
+  app.get('*', (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
 
 // ==================== 404 ====================
 
