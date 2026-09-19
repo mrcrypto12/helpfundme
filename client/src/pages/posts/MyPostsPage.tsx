@@ -155,7 +155,7 @@ const MyPostsPage: React.FC = () => {
         <div className="modal-overlay" onClick={resetWithdrawForm}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>💸 Request Withdrawal</h2>
+              <h2>Request Withdrawal</h2>
               <button className="modal-close" onClick={resetWithdrawForm}>✕</button>
             </div>
             <div className="modal-body">

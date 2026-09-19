@@ -125,7 +125,7 @@ export const updateWithdrawalStatus = async (req: AuthRequest, res: Response): P
     await Notification.create({
       recipient: withdrawal.requestedBy,
       type: 'system',
-      title: `💸 Withdrawal request ${status}`,
+      title: `Withdrawal request ${status}`,
       message: `Your withdrawal request for GHS ${withdrawal.amount.toFixed(2)} has been ${status}.${adminNotes ? ` Note: ${adminNotes}` : ''}`,
       relatedPost: (withdrawal.post as any)?._id,
     });
