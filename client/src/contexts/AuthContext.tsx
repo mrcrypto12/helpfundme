@@ -39,6 +39,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchUser();
   }, [fetchUser]);
 
+  // A role can be changed directly in PostgreSQL while the app is open.
+  // Re-read the authenticated user when the browser becomes active so the
+  // navigation and route guards reflect that change without another login.
+  useEffect(() => {
+    const refreshWhenActive = () => {
+      if (document.visibilityState === 'visible') void fetchUser();
+    };
+
+    window.addEventListener('focus', refreshWhenActive);
+    document.addEventListener('visibilitychange', refreshWhenActive);
+    return () => {
+      window.removeEventListener('focus', refreshWhenActive);
+      document.removeEventListener('visibilitychange', refreshWhenActive);
+    };
+  }, [fetchUser]);
+
   const login = async (email: string, password: string) => {
     const { data } = await api.post('/auth/login', { email, password });
     setUser(data.user);
