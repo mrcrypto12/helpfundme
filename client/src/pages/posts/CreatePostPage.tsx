@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { HiOutlineCloudArrowUp, HiOutlineXMark, HiOutlinePlusCircle } from 'react-icons/hi2';
 import { useAuth } from '../../contexts/AuthContext';
 
-const STEPS = ['Basic Info', 'Financial', 'Details', 'Location', 'Images', 'Review'];
+const STEPS = ['Basic Info', 'Financial', 'Details', 'Location', 'Evidence', 'Review'];
 
 interface FundBreakdownRow { label: string; amount: string; }
 
@@ -106,7 +106,7 @@ const CreatePostPage: React.FC = () => {
 
   const canProceed = () => {
     switch (step) {
-      case 0: return formData.title && formData.description && formData.purpose;
+      case 0: return formData.title && formData.description && formData.purpose && images.length > 0;
       case 1: return formData.targetAmount && parseFloat(formData.targetAmount) > 0;
       case 2: return formData.legalName && formData.contactEmail && formData.contactPhone && formData.dateOfBirth && formData.idNumber && formData.consentConfirmed && (formData.raisingForSelf || (formData.beneficiary.name && formData.beneficiaryVerification.legalName && formData.beneficiaryVerification.dateOfBirth && formData.beneficiaryVerification.idNumber));
       case 3: return formData.location.city && formData.location.region;
@@ -151,6 +151,17 @@ const CreatePostPage: React.FC = () => {
             <div className="form-group">
               <label className="form-label">Purpose / Reason for Help <span className="required">*</span></label>
               <textarea className="form-input form-textarea" placeholder="Why do you need help? How will the funds be used?" value={formData.purpose} onChange={(e) => update('purpose', e.target.value)} maxLength={2000} rows={4} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Campaign images <span className="required">*</span></label>
+              <div className="form-helper" style={{ marginBottom: 10 }}>Upload clear images that show the situation. The first image becomes the campaign cover and social-sharing preview.</div>
+              <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
+                <input {...getInputProps()} />
+                <div className="dropzone-icon"><HiOutlineCloudArrowUp /></div>
+                <div className="dropzone-text">Drag & drop campaign images here, or click to browse</div>
+                <div className="dropzone-hint">1–5 images, max 5MB each (JPEG, PNG, GIF, WebP)</div>
+              </div>
+              {images.length > 0 && <div className="image-preview-grid">{images.map((img, i) => <div key={`${img.name}-${i}`} className="image-preview"><img src={URL.createObjectURL(img)} alt={`Campaign upload ${i + 1}`} /><button type="button" className="remove-btn" onClick={() => removeImage(i)}><HiOutlineXMark /></button>{i === 0 && <span style={{ position: 'absolute', left: 6, bottom: 6, background: 'rgba(0,0,0,.72)', color: '#fff', borderRadius: 4, padding: '2px 6px', fontSize: '0.68rem' }}>Cover image</span>}</div>)}</div>}
             </div>
           </>
         )}
@@ -321,22 +332,7 @@ const CreatePostPage: React.FC = () => {
             <div className="form-group"><label className="form-label">Evidence summary *</label><textarea className="form-input form-textarea" value={formData.evidenceSummary} onChange={(e) => update('evidenceSummary', e.target.value)} placeholder="List each document and how it supports the claim." /></div>
             <div className="form-group"><label className="form-label">Supporting evidence * (PDF/JPG/PNG)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => setEvidenceFiles(Array.from(e.target.files || []))} /></div>
             {!(user?.verification?.documentsList?.length) && <div className="form-group"><label className="form-label">Applicant identity document * (your profile has none)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => setIdentityFiles(Array.from(e.target.files || []))} /></div>}
-            <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
-              <input {...getInputProps()} />
-              <div className="dropzone-icon"><HiOutlineCloudArrowUp /></div>
-              <div className="dropzone-text">Drag & drop images here, or click to browse</div>
-              <div className="dropzone-hint">Up to 5 images, max 5MB each (JPEG, PNG, GIF, WebP)</div>
-            </div>
-            {images.length > 0 && (
-              <div className="image-preview-grid">
-                {images.map((img, i) => (
-                  <div key={i} className="image-preview">
-                    <img src={URL.createObjectURL(img)} alt="" />
-                    <button className="remove-btn" onClick={() => removeImage(i)}><HiOutlineXMark /></button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Campaign images were added in Basic Info. Files here are private verification evidence and are only available to authorized reviewers.</p>
           </>
         )}
 

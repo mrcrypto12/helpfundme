@@ -88,9 +88,10 @@ const AdminPostDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-        <div className="card" style={{ padding: 24 }}>
+      <div className="admin-review-grid">
+        <div className="card admin-review-card">
           <h3 style={{ marginBottom: 12 }}>Campaign Info</h3>
+          {post.images?.length > 0 && <div className="admin-campaign-gallery">{post.images.map((image, index) => <img key={image} src={image} alt={`${post.title} ${index + 1}`} />)}</div>}
           <div className="info-box">
             <div className="info-box-row"><span className="info-box-label">Category</span><span className="info-box-value">{CATEGORY_LABELS[post.category]}</span></div>
             <div className="info-box-row"><span className="info-box-label">Severity</span><span className="info-box-value">{post.severity}</span></div>
@@ -127,7 +128,7 @@ const AdminPostDetailPage: React.FC = () => {
           {post.status === 'approved' && <button className="btn btn-danger" style={{ marginTop: 16 }} onClick={() => handleStatusChange('suspended')}>Suspend Campaign</button>}
         </div>
 
-        <div className="card" style={{ padding: 24 }}>
+        <div className="card admin-review-card">
           <h3 style={{ marginBottom: 12 }}>Withdrawal Requests</h3>
           {withdrawals.length === 0 ? (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No withdrawal requests for this campaign.</p>

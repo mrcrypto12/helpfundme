@@ -2274,3 +2274,53 @@ h1, h2, h3, h4, h5, h6 {
 .sidebar-overlay.visible {
   display: block;
 }
+
+/* Admin campaign review: roomy desktop columns, stacked mobile cards. */
+.admin-review-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.6fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.admin-review-card {
+  padding: 24px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-campaign-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.admin-campaign-gallery img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 768px) {
+  .admin-review-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .admin-review-card {
+    padding: 16px;
+  }
+
+  .admin-review-card .info-box-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .admin-review-card .info-box-value {
+    max-width: 100%;
+    text-align: left;
+  }
+}

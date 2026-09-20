@@ -83,6 +83,9 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
         images.push(result.url);
       }
     }
+    if (!images.length) {
+      res.status(400).json({ message: 'At least one campaign image is required' }); return;
+    }
     const evidenceDocuments = [];
     for (const file of evidenceFiles) evidenceDocuments.push(await uploadSecureDocument(file, `helpfund-gh/verification/campaigns/${req.user?._id}`));
     const submittedIdentityDocuments = [];
