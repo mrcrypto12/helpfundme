@@ -99,7 +99,7 @@ const NotificationBell: React.FC = () => {
   const getNotifIcon = (type: string) => {
     switch (type) {
       case 'donation_received': return '💚';
-      case 'campaign_milestone': return '🎯';
+      case 'campaign_milestone': return '';
       case 'campaign_completed': return '🎉';
       case 'campaign_update': return '📢';
       case 'thank_you': return '🙏';

@@ -105,7 +105,7 @@ const DashboardPage: React.FC = () => {
             </div>
             {progress < 100 && remaining > 0 && (
               <div style={{ fontSize: '0.75rem', color: 'var(--primary-light)', marginTop: '6px', fontWeight: 500 }}>
-                🎯 {formatCurrency(remaining)} to go
+                {formatCurrency(remaining)} to go
               </div>
             )}
           </div>
