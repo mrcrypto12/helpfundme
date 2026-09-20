@@ -15,6 +15,8 @@ const ProfilePage: React.FC = () => {
     phone: user?.phone || '',
     location: user?.location || '',
   });
+  const [verificationData, setVerificationData] = useState({ legalName: user?.verification?.legalName || '', dateOfBirth: user?.verification?.dateOfBirth || '', idType: user?.verification?.idType || 'ghana_card', idNumber: user?.verification?.idNumber || '', phone: user?.phone || '' });
+  const [documents, setDocuments] = useState<File[]>([]);
 
   const handleSave = async () => {
     setLoading(true);
@@ -32,6 +34,14 @@ const ProfilePage: React.FC = () => {
 
   const badges = user?.badges || [];
   const verified = user?.verification?.identity;
+
+  const submitVerification = async () => {
+    const fd = new FormData();
+    Object.entries(verificationData).forEach(([key, value]) => fd.append(key, value));
+    documents.forEach((file) => fd.append('documents', file));
+    try { const { data } = await api.post('/auth/verification', fd, { headers: { 'Content-Type': 'multipart/form-data' } }); updateUser(data.user); toast.success(data.message); }
+    catch (error: any) { toast.error(error.response?.data?.message || 'Verification submission failed'); }
+  };
 
   return (
     <div className="page-container" style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -115,6 +125,18 @@ const ProfilePage: React.FC = () => {
             <div className="info-box-row"><span className="info-box-label">Member since</span><span className="info-box-value">{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</span></div>
           </div>
         )}
+      </div>
+      <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+        <h3>Identity verification</h3>
+        <p style={{ color: 'var(--text-secondary)', margin: '8px 0 16px' }}>Required before campaign approval. Documents remain private and are available only to authorized reviewers.</p>
+        <div className="form-group"><label className="form-label">Full legal name</label><input className="form-input" value={verificationData.legalName} onChange={(e) => setVerificationData({ ...verificationData, legalName: e.target.value })} /></div>
+        <div className="form-group"><label className="form-label">Date of birth</label><input type="date" className="form-input" value={verificationData.dateOfBirth} onChange={(e) => setVerificationData({ ...verificationData, dateOfBirth: e.target.value })} /></div>
+        <div className="form-group"><label className="form-label">ID type</label><select className="form-input" value={verificationData.idType} onChange={(e) => setVerificationData({ ...verificationData, idType: e.target.value })}><option value="ghana_card">Ghana Card</option><option value="passport">Passport</option><option value="drivers_licence">Driver's licence</option><option value="other">Other lawful ID</option></select></div>
+        <div className="form-group"><label className="form-label">ID number</label><input className="form-input" value={verificationData.idNumber} onChange={(e) => setVerificationData({ ...verificationData, idNumber: e.target.value })} /></div>
+        <div className="form-group"><label className="form-label">Phone</label><input className="form-input" value={verificationData.phone} onChange={(e) => setVerificationData({ ...verificationData, phone: e.target.value })} /></div>
+        <div className="form-group"><label className="form-label">ID documents (PDF/JPG/PNG, max 10MB)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => setDocuments(Array.from(e.target.files || []))} /></div>
+        <button className="btn btn-primary" onClick={submitVerification}>Submit for verification</button>
+        <p style={{ marginTop: 10, color: 'var(--text-muted)' }}>Status: {user?.verification?.status || 'not_submitted'}</p>
       </div>
     </div>
   );

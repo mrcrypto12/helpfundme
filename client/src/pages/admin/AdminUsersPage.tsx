@@ -3,9 +3,11 @@ import api from '../../services/api';
 import { IUser } from '../../types';
 import { formatCurrency, formatDateTime, getInitials } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const AdminUsersPage: React.FC = () => {
   const [users, setUsers] = useState<IUser[]>([]);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -80,8 +82,8 @@ const AdminUsersPage: React.FC = () => {
                 <td style={{ color: 'var(--gold)', fontWeight: 600 }}>{formatCurrency(u.totalDonated)}</td>
                 <td style={{ color: 'var(--text-muted)' }}>{formatDateTime(u.createdAt)}</td>
                 <td>
-                  <button className="btn btn-secondary btn-sm" onClick={() => handleToggleVerify(u._id)}>
-                    {u.verification?.identity ? 'Unverify' : 'Verify Identity'}
+                  <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/admin/users/${u._id}`)}>
+                    Review Details
                   </button>
                 </td>
               </tr>

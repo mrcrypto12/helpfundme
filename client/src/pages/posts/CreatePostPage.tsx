@@ -5,6 +5,7 @@ import api from '../../services/api';
 import { GHANA_REGIONS } from '../../types';
 import toast from 'react-hot-toast';
 import { HiOutlineCloudArrowUp, HiOutlineXMark, HiOutlinePlusCircle } from 'react-icons/hi2';
+import { useAuth } from '../../contexts/AuthContext';
 
 const STEPS = ['Basic Info', 'Financial', 'Details', 'Location', 'Images', 'Review'];
 
@@ -12,9 +13,12 @@ interface FundBreakdownRow { label: string; amount: string; }
 
 const CreatePostPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
+  const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
+  const [identityFiles, setIdentityFiles] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     title: '', description: '', purpose: '',
     targetAmount: '', severity: 'medium', category: 'medical',
@@ -23,6 +27,10 @@ const CreatePostPage: React.FC = () => {
     location: { city: '', region: 'Greater Accra' },
     beneficiary: { name: '', relationship: '', phone: '' },
     raisingForSelf: true,
+    legalName: user?.verification?.legalName || user?.name || '', contactEmail: user?.email || '', contactPhone: user?.phone || '',
+    dateOfBirth: user?.verification?.dateOfBirth || '', idType: user?.verification?.idType || 'ghana_card', idNumber: user?.verification?.idNumber || '',
+    beneficiaryVerification: { legalName: '', dateOfBirth: '', idType: 'ghana_card', idNumber: '' },
+    consentConfirmed: false, guardianConsent: false, evidenceSummary: '',
   });
   const [fundRows, setFundRows] = useState<FundBreakdownRow[]>([{ label: '', amount: '' }]);
 
@@ -64,9 +72,15 @@ const CreatePostPage: React.FC = () => {
       fd.append('isSurgery', String(formData.isSurgery));
       if (formData.isSurgery) fd.append('surgeryDetails', JSON.stringify(formData.surgeryDetails));
       fd.append('location', JSON.stringify(formData.location));
+      fd.append('legalName', formData.legalName); fd.append('contactEmail', formData.contactEmail); fd.append('contactPhone', formData.contactPhone);
+      fd.append('dateOfBirth', formData.dateOfBirth); fd.append('idType', formData.idType); fd.append('idNumber', formData.idNumber);
+      fd.append('beneficiaryType', formData.raisingForSelf ? 'self' : 'other');
+      fd.append('consentConfirmed', String(formData.consentConfirmed)); fd.append('guardianConsent', String(formData.guardianConsent));
+      fd.append('evidenceSummary', formData.evidenceSummary);
 
       if (!formData.raisingForSelf && formData.beneficiary.name.trim()) {
         fd.append('beneficiary', JSON.stringify({ ...formData.beneficiary, verified: false }));
+        fd.append('beneficiaryVerification', JSON.stringify(formData.beneficiaryVerification));
       }
 
       const validFundRows = fundRows
@@ -77,6 +91,8 @@ const CreatePostPage: React.FC = () => {
       }
 
       images.forEach((img) => fd.append('images', img));
+      evidenceFiles.forEach((file) => fd.append('evidence', file));
+      identityFiles.forEach((file) => fd.append('identityDocuments', file));
 
       await api.post('/posts', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast.success('Post submitted for review!');
@@ -92,7 +108,9 @@ const CreatePostPage: React.FC = () => {
     switch (step) {
       case 0: return formData.title && formData.description && formData.purpose;
       case 1: return formData.targetAmount && parseFloat(formData.targetAmount) > 0;
+      case 2: return formData.legalName && formData.contactEmail && formData.contactPhone && formData.dateOfBirth && formData.idNumber && formData.consentConfirmed && (formData.raisingForSelf || (formData.beneficiary.name && formData.beneficiaryVerification.legalName && formData.beneficiaryVerification.dateOfBirth && formData.beneficiaryVerification.idNumber));
       case 3: return formData.location.city && formData.location.region;
+      case 4: return evidenceFiles.length > 0 && ((user?.verification?.documentsList?.length || 0) > 0 || identityFiles.length > 0);
       default: return true;
     }
   };
@@ -231,6 +249,16 @@ const CreatePostPage: React.FC = () => {
             )}
 
             <div style={{ height: 1, background: 'var(--border)', margin: '24px 0' }} />
+            <h3 style={{ marginBottom: 12 }}>Mandatory applicant verification</h3>
+            <div className="form-group"><label className="form-label">Full legal name *</label><input className="form-input" value={formData.legalName} onChange={(e) => update('legalName', e.target.value)} /></div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}><div className="form-group"><label className="form-label">Email *</label><input type="email" className="form-input" value={formData.contactEmail} onChange={(e) => update('contactEmail', e.target.value)} /></div><div className="form-group"><label className="form-label">Phone *</label><input className="form-input" value={formData.contactPhone} onChange={(e) => update('contactPhone', e.target.value)} /></div></div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}><div className="form-group"><label className="form-label">Date of birth *</label><input type="date" className="form-input" value={formData.dateOfBirth} onChange={(e) => update('dateOfBirth', e.target.value)} /></div><div className="form-group"><label className="form-label">ID type *</label><select className="form-input" value={formData.idType} onChange={(e) => update('idType', e.target.value)}><option value="ghana_card">Ghana Card</option><option value="passport">Passport</option><option value="drivers_licence">Driver's licence</option><option value="other">Other lawful ID</option></select></div></div>
+            <div className="form-group"><label className="form-label">ID number *</label><input className="form-input" value={formData.idNumber} onChange={(e) => update('idNumber', e.target.value)} /></div>
+            {!formData.raisingForSelf && <><h4>Beneficiary verification</h4><div className="form-group"><label className="form-label">Beneficiary legal name *</label><input className="form-input" value={formData.beneficiaryVerification.legalName} onChange={(e) => update('beneficiaryVerification', { ...formData.beneficiaryVerification, legalName: e.target.value })} /></div><div className="form-group"><label className="form-label">Beneficiary date of birth *</label><input type="date" className="form-input" value={formData.beneficiaryVerification.dateOfBirth} onChange={(e) => update('beneficiaryVerification', { ...formData.beneficiaryVerification, dateOfBirth: e.target.value })} /></div><div className="form-group"><label className="form-label">Beneficiary ID type *</label><select className="form-input" value={formData.beneficiaryVerification.idType} onChange={(e) => update('beneficiaryVerification', { ...formData.beneficiaryVerification, idType: e.target.value })}><option value="ghana_card">Ghana Card</option><option value="passport">Passport</option><option value="birth_certificate">Birth certificate (minor)</option><option value="student_id">Student ID</option><option value="other">Other lawful ID</option></select></div><div className="form-group"><label className="form-label">Beneficiary ID number *</label><input className="form-input" value={formData.beneficiaryVerification.idNumber} onChange={(e) => update('beneficiaryVerification', { ...formData.beneficiaryVerification, idNumber: e.target.value })} /></div></>}
+            <label style={{ display: 'flex', gap: 8, marginBottom: 10 }}><input type="checkbox" checked={formData.consentConfirmed} onChange={(e) => update('consentConfirmed', e.target.checked)} /> I confirm I have lawful authority and informed consent to submit and publish this information. *</label>
+            <label style={{ display: 'flex', gap: 8 }}><input type="checkbox" checked={formData.guardianConsent} onChange={(e) => update('guardianConsent', e.target.checked)} /> Guardian consent obtained where the beneficiary is under 18.</label>
+
+            <div style={{ height: 1, background: 'var(--border)', margin: '24px 0' }} />
 
             {/* Fund Breakdown */}
             <label className="form-label">Where Your Money Goes (optional)</label>
@@ -289,6 +317,10 @@ const CreatePostPage: React.FC = () => {
 
         {step === 4 && (
           <>
+            <div className="card" style={{ padding: 16, marginBottom: 16 }}><strong>Required category evidence</strong><p style={{ marginTop: 6, color: 'var(--text-secondary)' }}>{formData.category === 'medical' ? 'Hospital bill/invoice, treatment evidence, hospital confirmation where appropriate, and patient/representative consent.' : formData.category === 'education' ? 'School invoice/fee statement, student number, results where relevant, relationship/authority, and student ID where available.' : formData.category === 'emergency' ? 'Photos, location, damage and cost evidence, plus an authority, organization, or witness report where available.' : 'A project plan, budget, authorization, registration details where applicable, and a transparent use-of-funds explanation.'}</p></div>
+            <div className="form-group"><label className="form-label">Evidence summary *</label><textarea className="form-input form-textarea" value={formData.evidenceSummary} onChange={(e) => update('evidenceSummary', e.target.value)} placeholder="List each document and how it supports the claim." /></div>
+            <div className="form-group"><label className="form-label">Supporting evidence * (PDF/JPG/PNG)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => setEvidenceFiles(Array.from(e.target.files || []))} /></div>
+            {!(user?.verification?.documentsList?.length) && <div className="form-group"><label className="form-label">Applicant identity document * (your profile has none)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => setIdentityFiles(Array.from(e.target.files || []))} /></div>}
             <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
               <input {...getInputProps()} />
               <div className="dropzone-icon"><HiOutlineCloudArrowUp /></div>

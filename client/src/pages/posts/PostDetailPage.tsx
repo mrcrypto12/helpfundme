@@ -169,6 +169,14 @@ const PostDetailPage: React.FC = () => {
     }
   };
 
+  const handleReportCampaign = async () => {
+    if (!user) { navigate('/login'); return; }
+    const reason = window.prompt('Please explain your concern. Reports are handled confidentially.');
+    if (!reason) return;
+    try { const { data } = await api.post(`/posts/${id}/report`, { reason }); toast.success(data.message); }
+    catch (error: any) { toast.error(error.response?.data?.message || 'Unable to submit report'); }
+  };
+
   const handleShare = () => setShowShareModal(true);
 
   const handlePostUpdate = async () => {
@@ -560,6 +568,9 @@ const PostDetailPage: React.FC = () => {
               )}
               <button className="btn btn-outline btn-block" onClick={handleShare}>
                 Share this cause
+              </button>
+              <button className="btn btn-ghost btn-block" onClick={handleReportCampaign} style={{ marginTop: 8, color: 'var(--text-muted)' }}>
+                Report Campaign
               </button>
 
               {donations.length > 0 && (

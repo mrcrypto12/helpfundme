@@ -7,6 +7,10 @@ import Comment from '../models/Comment';
 import Withdrawal from '../models/Withdrawal';
 import PlatformFund from '../models/PlatformFund';
 import { AuthRequest } from '../middleware/auth';
+import AuditLog from '../models/AuditLog';
+import CampaignReport from '../models/CampaignReport';
+import { secureDocumentUrl } from '../utils/cloudinary';
+import Notification from '../models/Notification';
 
 // @desc    Get admin dashboard stats
 // @route   GET /api/admin/stats
@@ -110,15 +114,16 @@ export const getPostDetailAdmin = async (req: Request, res: Response): Promise<v
       return;
     }
 
-    const [donations, comments, withdrawals] = await Promise.all([
+    const [donations, comments, withdrawals, reports] = await Promise.all([
       Donation.find({ post: post._id, paymentStatus: 'success' })
         .populate('donor', 'name email avatar')
         .sort({ createdAt: -1 }),
       Comment.find({ post: post._id }).populate('author', 'name avatar').sort({ createdAt: -1 }),
       Withdrawal.find({ post: post._id }).sort({ createdAt: -1 }),
+      CampaignReport.find({ post: post._id }).populate('reporter', 'name email').sort({ createdAt: -1 }),
     ]);
 
-    res.json({ post, donations, comments, withdrawals });
+    res.json({ post, donations, comments, withdrawals, reports });
   } catch (error) {
     console.error('Get post detail (admin) error:', error);
     res.status(500).json({ message: 'Error fetching post detail' });
@@ -131,12 +136,29 @@ export const updatePostStatus = async (req: AuthRequest, res: Response): Promise
   try {
     const { status, adminNotes, declineReason } = req.body;
 
-    if (!['approved', 'declined', 'pending'].includes(status)) {
+    if (!['approved', 'declined', 'pending', 'suspended'].includes(status)) {
       res.status(400).json({ message: 'Invalid status' });
       return;
     }
 
-    const update: any = { status };
+    const existingPost = await Post.findById(req.params.id);
+    if (!existingPost) { res.status(404).json({ message: 'Post not found' }); return; }
+    if (status === 'approved') {
+      if (!existingPost.consentConfirmed || !(existingPost.evidenceDocuments || []).length || !existingPost.applicantVerification?.legalName) {
+        res.status(400).json({ message: 'Campaign cannot be approved until identity, consent, and supporting evidence are submitted' }); return;
+      }
+      const subjectDob = existingPost.beneficiaryType === 'other'
+        ? existingPost.beneficiaryVerification?.dateOfBirth
+        : existingPost.applicantVerification?.dateOfBirth;
+      if (subjectDob) {
+        const age = Math.floor((Date.now() - new Date(subjectDob).getTime()) / 31_557_600_000);
+        if (age < 18 && !existingPost.guardianConsent) {
+          res.status(400).json({ message: 'Guardian consent is required for a beneficiary under 18' }); return;
+        }
+      }
+    }
+
+    const update: any = { status, isActive: status === 'approved', reviewStatus: status };
     if (adminNotes) update.adminNotes = adminNotes;
     if (status === 'declined' && declineReason) update.declineReason = declineReason;
 
@@ -148,10 +170,39 @@ export const updatePostStatus = async (req: AuthRequest, res: Response): Promise
       return;
     }
 
+    post.reviewHistory = [...(post.reviewHistory || []), { action: status, note: adminNotes || declineReason || '', admin: req.user?._id, date: new Date() }];
+    await post.save();
+    await AuditLog.create({ actor: req.user?._id, action: `campaign.${status}`, targetType: 'post', targetId: post._id, note: adminNotes || declineReason || '' });
+    if (status === 'suspended') {
+      const donorIds = await Donation.distinct('donor', { post: post._id, paymentStatus: 'success' });
+      if (donorIds.length) await Notification.insertMany(donorIds.map((recipient) => ({ recipient, type: 'campaign_suspended', title: 'Campaign review update', message: `The campaign "${post.title}" has been paused while a confidential review is completed. We will provide further updates when appropriate.`, relatedPost: post._id })));
+    }
+
     res.json({ message: `Post ${status}`, post });
   } catch (error) {
     res.status(500).json({ message: 'Error updating post status' });
   }
+};
+
+export const getUserDetail = async (req: Request, res: Response): Promise<void> => {
+  const user = await User.findById(req.params.id);
+  if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+  const posts = await Post.find({ author: user._id }).sort({ createdAt: -1 });
+  res.json({ user, posts });
+};
+
+export const downloadUserDocument = async (req: Request, res: Response): Promise<void> => {
+  const user = await User.findById(req.params.id);
+  const document = user?.verification?.documentsList?.[Number(req.params.index)];
+  if (!document) { res.status(404).json({ message: 'Document not found' }); return; }
+  res.redirect(secureDocumentUrl(document));
+};
+
+export const downloadPostEvidence = async (req: Request, res: Response): Promise<void> => {
+  const post = await Post.findById(req.params.id);
+  const document = post?.evidenceDocuments?.[Number(req.params.index)];
+  if (!document) { res.status(404).json({ message: 'Evidence not found' }); return; }
+  res.redirect(secureDocumentUrl(document));
 };
 
 // @desc    Get all users
@@ -190,12 +241,20 @@ export const verifyUserIdentity = async (req: AuthRequest, res: Response): Promi
       res.status(404).json({ message: 'User not found' });
       return;
     }
-    user.verification = { ...(user.verification || { identity: false, phone: false, documents: false }), [field]: !user.verification?.[field as keyof typeof user.verification] };
+    const enabled = !user.verification?.[field as keyof typeof user.verification];
+    user.verification = { ...(user.verification || { identity: false, phone: false, documents: false }), [field]: enabled, status: field === 'identity' ? (enabled ? 'verified' : 'rejected') : user.verification?.status, adminNotes: String(req.body.adminNotes || user.verification?.adminNotes || '') };
+    user.isVerified = Boolean(user.verification.identity && user.verification.documents);
     await user.save();
+    await AuditLog.create({ actor: req.user?._id, action: `user.verification.${field}.${enabled ? 'approved' : 'revoked'}`, targetType: 'user', targetId: user._id, note: req.body.adminNotes || '' });
     res.json({ message: 'User verification updated', user });
   } catch (error) {
     res.status(500).json({ message: 'Error updating verification' });
   }
+};
+
+export const getCampaignReports = async (_req: Request, res: Response): Promise<void> => {
+  const reports = await CampaignReport.find().populate('post', 'title status').populate('reporter', 'name email').sort({ createdAt: -1 });
+  res.json({ reports });
 };
 
 // @desc    Get all donation transactions

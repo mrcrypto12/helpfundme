@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import LegalConsentModal from '../../components/LegalConsentModal';
 
 const RegisterPage: React.FC = () => {
   const { register, googleLogin } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
+  const [showLegal, setShowLegal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,9 +25,13 @@ const RegisterPage: React.FC = () => {
       toast.error('Passwords do not match');
       return;
     }
-    setLoading(true);
+    setShowLegal(true);
+  };
+
+  const finishRegistration = async () => {
+    setShowLegal(false); setLoading(true);
     try {
-      await register(formData.name, formData.email, formData.password);
+      await register(formData.name, formData.email, formData.password, true);
       toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error: any) {
@@ -111,6 +117,7 @@ const RegisterPage: React.FC = () => {
           <div className="auth-footer">
             Already have an account? <Link to="/login">Sign In</Link>
           </div>
+          {showLegal && <LegalConsentModal onAccept={finishRegistration} onCancel={() => setShowLegal(false)} />}
         </div>
       </div>
     </div>

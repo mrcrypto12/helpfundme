@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import LegalConsentModal, { TERMS_VERSION } from './components/LegalConsentModal';
+import api from './services/api';
 
 import Sidebar from './components/layout/Sidebar';
 import Navbar from './components/layout/Navbar';
@@ -23,6 +25,7 @@ import PostManagementPage from './pages/admin/PostManagementPage';
 import AdminPostDetailPage from './pages/admin/AdminPostDetailPage';
 import FundAllocationPage from './pages/admin/FundAllocationPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import WithdrawalManagementPage from './pages/admin/WithdrawalManagementPage';
 import RefundManagementPage from './pages/admin/RefundManagementPage';
 
@@ -75,6 +78,15 @@ const AppLayout: React.FC = () => {
   );
 };
 
+const LegalAcceptanceGate: React.FC = () => {
+  const { user, updateUser } = useAuth();
+  if (!user || user.role === 'admin' || user.acceptedTermsVersion === TERMS_VERSION) return null;
+  return <LegalConsentModal onAccept={async () => {
+    const { data } = await api.post('/auth/accept-terms');
+    updateUser(data.user);
+  }} />;
+};
+
 const App: React.FC = () => {
   return (
     <BrowserRouter>
@@ -90,6 +102,7 @@ const App: React.FC = () => {
             },
           }}
         />
+        <LegalAcceptanceGate />
 
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -112,6 +125,7 @@ const App: React.FC = () => {
                 <Route path="/admin/posts/:id" element={<AdminPostDetailPage />} />
                 <Route path="/admin/funds" element={<FundAllocationPage />} />
                 <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
                 <Route path="/admin/withdrawals" element={<WithdrawalManagementPage />} />
                 <Route path="/admin/refunds" element={<RefundManagementPage />} />
               </Route>

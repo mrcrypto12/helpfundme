@@ -4,6 +4,9 @@ import { validationResult } from 'express-validator';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/token';
+import { uploadSecureDocument } from '../utils/cloudinary';
+
+export const TERMS_VERSION = '2026-09-20';
 
 const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 const baseCookieOptions: CookieOptions = {
@@ -29,7 +32,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, password, acceptedTerms } = req.body;
+    if (acceptedTerms !== true) {
+      res.status(400).json({ message: 'You must accept the Terms of Service and Privacy Notice' });
+      return;
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -39,7 +46,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Create user
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, acceptedTermsVersion: TERMS_VERSION, acceptedTermsAt: new Date() });
 
     // Generate tokens
     const accessToken = generateAccessToken(user);
@@ -225,6 +232,36 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
+};
+
+export const acceptTerms = async (req: AuthRequest, res: Response): Promise<void> => {
+  const user = await User.findByIdAndUpdate(req.user?._id, { acceptedTermsVersion: TERMS_VERSION, acceptedTermsAt: new Date() }, { new: true });
+  res.json({ message: 'Terms accepted', user });
+};
+
+export const submitVerification = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const user = await User.findById(req.user?._id);
+    if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+    const { legalName, dateOfBirth, idType, idNumber, phone } = req.body;
+    if (![legalName, dateOfBirth, idType, idNumber, phone].every((v) => String(v || '').trim())) {
+      res.status(400).json({ message: 'Legal name, date of birth, ID type, ID number, and phone are required' }); return;
+    }
+    const files = (req.files as Express.Multer.File[]) || [];
+    if (!files.length && !(user.verification?.documentsList || []).length) {
+      res.status(400).json({ message: 'At least one identity document is required' }); return;
+    }
+    const documents = [];
+    for (const file of files) documents.push(await uploadSecureDocument(file, `helpfund-gh/verification/users/${user._id}`));
+    user.phone = phone;
+    user.verification = {
+      ...(user.verification || {}), identity: false, documents: false, status: 'pending',
+      legalName, dateOfBirth, idType, idNumber,
+      documentsList: [...(user.verification?.documentsList || []), ...documents], adminNotes: '',
+    };
+    await user.save();
+    res.json({ message: 'Verification submitted for review', user: user.toJSON() });
+  } catch (error) { console.error(error); res.status(500).json({ message: 'Unable to submit verification' }); }
 };
 
 // @desc    Logout user

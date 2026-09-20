@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { IPost } from '../../types';
 import { formatCurrency, formatDateTime } from '../../utils/helpers';
@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 
 const PostManagementPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all');
@@ -88,7 +89,7 @@ const PostManagementPage: React.FC = () => {
             </thead>
             <tbody>
               {posts.map((post) => (
-                <tr key={post._id}>
+                <tr key={post._id} onClick={() => navigate(`/admin/posts/${post._id}`)} style={{ cursor: 'pointer' }}>
                   <td style={{ fontWeight: 500, color: 'var(--text-primary)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {post.title}
                   </td>
@@ -102,26 +103,9 @@ const PostManagementPage: React.FC = () => {
                   <td style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{formatDateTime(post.createdAt)}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '6px' }}>
-                      {post.status === 'pending' && (
-                        <>
-                          <button className="btn btn-success btn-sm" onClick={() => handleStatusChange(post._id, 'approved')}>
-                            Approve
-                          </button>
-                          <button className="btn btn-danger btn-sm" onClick={() => setSelectedPost(post)}>
-                            Decline
-                          </button>
-                        </>
-                      )}
-                      {post.status === 'declined' && (
-                        <button className="btn btn-success btn-sm" onClick={() => handleStatusChange(post._id, 'approved')}>
-                          Approve
-                        </button>
-                      )}
-                      {post.status === 'approved' && (
-                        <button className="btn btn-secondary btn-sm" onClick={() => handleStatusChange(post._id, 'pending')}>
-                          Revoke
-                        </button>
-                      )}
+                      <button className="btn btn-secondary btn-sm" onClick={(event) => { event.stopPropagation(); navigate(`/admin/posts/${post._id}`); }}>
+                        Review Details
+                      </button>
                     </div>
                   </td>
                 </tr>

@@ -5,6 +5,9 @@ import PostView from '../models/PostView';
 import Comment from '../models/Comment';
 import { AuthRequest } from '../middleware/auth';
 import { uploadToCloudinary } from '../utils/cloudinary';
+import { uploadSecureDocument } from '../utils/cloudinary';
+import User from '../models/User';
+import CampaignReport from '../models/CampaignReport';
 
 const safeParse = (value: any) => {
   if (value === undefined || value === null || value === '') return undefined;
@@ -14,6 +17,18 @@ const safeParse = (value: any) => {
   } catch {
     return undefined;
   }
+};
+
+const publicPost = (post: any) => {
+  const value = typeof post?.toObject === 'function' ? post.toObject() : { ...post };
+  delete value.applicantVerification;
+  delete value.beneficiaryVerification;
+  delete value.evidenceDocuments;
+  delete value.reviewHistory;
+  delete value.adminNotes;
+  delete value.verificationNotes;
+  if (value.beneficiary) value.beneficiary = { ...value.beneficiary, phone: undefined };
+  return value;
 };
 
 // @desc    Create a new post
@@ -29,15 +44,53 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
     const {
       title, description, purpose, targetAmount,
       severity, category, isSurgery, surgeryDetails,
-      location, fundBreakdown, beneficiary,
+      location, fundBreakdown, beneficiary, legalName, contactEmail, contactPhone,
+      dateOfBirth, idType, idNumber, beneficiaryType, beneficiaryVerification,
+      consentConfirmed, guardianConsent, evidenceSummary,
     } = req.body;
 
+    const user = await User.findById(req.user?._id);
+    const parsedBeneficiary = safeParse(beneficiary);
+    const parsedBeneficiaryVerification = safeParse(beneficiaryVerification);
+    const isForOther = beneficiaryType === 'other';
+    const required = [legalName, contactEmail, contactPhone, dateOfBirth, idType, idNumber];
+    if (required.some((value) => !String(value || '').trim())) {
+      res.status(400).json({ message: 'Complete all campaign identity and contact fields' }); return;
+    }
+    if (String(consentConfirmed) !== 'true') {
+      res.status(400).json({ message: 'Campaign publication and personal-data consent is required' }); return;
+    }
+    if (isForOther && (!parsedBeneficiary?.name || !parsedBeneficiaryVerification?.legalName || !parsedBeneficiaryVerification?.idNumber)) {
+      res.status(400).json({ message: 'The beneficiary identity and relationship details are required' }); return;
+    }
+
+    const groupedFiles = (req.files || {}) as Record<string, Express.Multer.File[]>;
+    const identityFiles = groupedFiles.identityDocuments || [];
+    const existingIdentityDocuments = user?.verification?.documentsList || [];
+    if (!identityFiles.length && !existingIdentityDocuments.length) {
+      res.status(400).json({ message: 'Upload an identity document in your profile or campaign application' }); return;
+    }
+    const evidenceFiles = groupedFiles.evidence || [];
+    if (!evidenceFiles.length) {
+      res.status(400).json({ message: 'Supporting evidence is required for every campaign' }); return;
+    }
+
     const images: string[] = [];
-    if (req.files && Array.isArray(req.files)) {
-      for (const file of req.files) {
+    if (groupedFiles.images) {
+      for (const file of groupedFiles.images) {
+        if (!file.mimetype.startsWith('image/')) continue;
         const result = await uploadToCloudinary(file.buffer, 'helpfund-gh/posts');
         images.push(result.url);
       }
+    }
+    const evidenceDocuments = [];
+    for (const file of evidenceFiles) evidenceDocuments.push(await uploadSecureDocument(file, `helpfund-gh/verification/campaigns/${req.user?._id}`));
+    const submittedIdentityDocuments = [];
+    for (const file of identityFiles) submittedIdentityDocuments.push(await uploadSecureDocument(file, `helpfund-gh/verification/users/${req.user?._id}`));
+    if (user && submittedIdentityDocuments.length) {
+      user.verification = { ...(user.verification || {}), legalName, dateOfBirth, idType, idNumber, status: 'pending', documentsList: [...existingIdentityDocuments, ...submittedIdentityDocuments], identity: false, documents: false };
+      user.phone = contactPhone;
+      await user.save();
     }
 
     const post = await Post.create({
@@ -52,9 +105,14 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
       surgeryDetails: isSurgery ? safeParse(surgeryDetails) || {} : undefined,
       location: safeParse(location) || location,
       images,
-      status: 'pending',
+      status: 'pending', reviewStatus: 'submitted', isActive: false,
       fundBreakdown: safeParse(fundBreakdown) || [],
-      beneficiary: safeParse(beneficiary) || undefined,
+      beneficiary: parsedBeneficiary || undefined,
+      beneficiaryType: isForOther ? 'other' : 'self',
+      applicantVerification: { legalName, contactEmail, contactPhone, dateOfBirth, idType, idNumber },
+      beneficiaryVerification: isForOther ? parsedBeneficiaryVerification : undefined,
+      evidenceDocuments, evidenceSummary: String(evidenceSummary || ''),
+      consentConfirmed: true, guardianConsent: String(guardianConsent) === 'true',
     });
 
     await post.populate('author', 'name avatar');
@@ -67,6 +125,17 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
     console.error('Create post error:', error);
     res.status(500).json({ message: 'Error creating post' });
   }
+};
+
+export const reportCampaign = async (req: AuthRequest, res: Response): Promise<void> => {
+  const post = await Post.findById(req.params.id);
+  if (!post) { res.status(404).json({ message: 'Post not found' }); return; }
+  const reason = String(req.body.reason || '').trim();
+  if (reason.length < 10) { res.status(400).json({ message: 'Please provide a clear report reason' }); return; }
+  await CampaignReport.create({ post: post._id, reporter: req.user?._id, reason, status: 'open' });
+  post.reportsCount = Number(post.reportsCount || 0) + 1;
+  await post.save();
+  res.status(201).json({ message: 'Report received confidentially for review' });
 };
 
 // @desc    Get all approved posts (public)
@@ -112,7 +181,7 @@ export const getPosts = async (req: Request, res: Response): Promise<void> => {
     ]);
 
     res.json({
-      posts,
+      posts: posts.map(publicPost),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
@@ -178,7 +247,7 @@ export const getPost = async (req: Request, res: Response): Promise<void> => {
       await post.save();
     }
 
-    res.json({ post });
+    res.json({ post: publicPost(post) });
   } catch (error) {
     console.error('Get post error:', error);
     res.status(500).json({ message: 'Error fetching post' });

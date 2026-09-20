@@ -12,7 +12,10 @@ import {
   getMe,
   updateProfile,
   logout,
+  acceptTerms,
+  submitVerification,
 } from '../controllers/authController';
+import verificationUpload from '../middleware/verificationUpload';
 
 const router = Router();
 const clientUrl = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
@@ -74,6 +77,8 @@ router.get(
 // Protected routes
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
+router.post('/accept-terms', protect, acceptTerms);
+router.post('/verification', protect, verificationUpload.array('documents', 4), submitVerification);
 router.post('/logout', protect, logout);
 
 export default router;

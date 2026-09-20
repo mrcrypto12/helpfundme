@@ -2,6 +2,13 @@ export interface IVerification {
   identity: boolean;
   phone: boolean;
   documents: boolean;
+  status?: 'not_submitted' | 'pending' | 'verified' | 'rejected';
+  legalName?: string;
+  dateOfBirth?: string;
+  idType?: string;
+  idNumber?: string;
+  documentsList?: Array<{ originalName: string; publicId: string }>;
+  adminNotes?: string;
 }
 
 export interface IUser {
@@ -19,6 +26,8 @@ export interface IUser {
   campaignsSupported: number;
   peopleHelped: number;
   verification: IVerification;
+  acceptedTermsVersion?: string;
+  acceptedTermsAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,7 +75,7 @@ export interface IPost {
     city: string;
     region: string;
   };
-  status: 'pending' | 'approved' | 'declined' | 'completed';
+  status: 'draft' | 'pending' | 'approved' | 'declined' | 'suspended' | 'completed';
   viewCount: number;
   likes: string[];
   likesCount: number;
@@ -80,6 +89,14 @@ export interface IPost {
   fundBreakdown: IFundBreakdownItem[];
   beneficiary?: IBeneficiary;
   coOrganizers: ICoOrganizer[];
+  evidenceDocuments?: Array<{ originalName: string }>;
+  evidenceSummary?: string;
+  applicantVerification?: Record<string, string>;
+  beneficiaryVerification?: Record<string, string>;
+  beneficiaryType?: 'self' | 'other';
+  consentConfirmed?: boolean;
+  guardianConsent?: boolean;
+  reviewHistory?: Array<{ action: string; note: string; date: string }>;
   createdAt: string;
   updatedAt: string;
 }

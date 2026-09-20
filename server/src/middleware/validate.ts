@@ -15,6 +15,7 @@ export const registerValidation = [
     .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+  body('acceptedTerms').equals('true').withMessage('Terms and Privacy Notice must be accepted'),
 ];
 
 export const loginValidation = [

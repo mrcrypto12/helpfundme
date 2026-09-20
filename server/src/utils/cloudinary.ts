@@ -37,3 +37,28 @@ export const uploadToCloudinary = (
 export const deleteFromCloudinary = async (publicId: string): Promise<void> => {
   await cloudinary.uploader.destroy(publicId, { invalidate: true, resource_type: 'image' });
 };
+
+export const uploadSecureDocument = (
+  file: Express.Multer.File,
+  folder: string
+): Promise<{ publicId: string; resourceType: string; format: string; originalName: string }> => new Promise((resolve, reject) => {
+  const stream = cloudinary.uploader.upload_stream(
+    { folder, resource_type: 'auto', type: 'authenticated', unique_filename: true, overwrite: false },
+    (error, result) => error ? reject(error) : result && resolve({
+      publicId: result.public_id,
+      resourceType: result.resource_type,
+      format: result.format || file.originalname.split('.').pop() || '',
+      originalName: file.originalname,
+    })
+  );
+  streamifier.createReadStream(file.buffer).pipe(stream);
+});
+
+export const secureDocumentUrl = (document: any): string => cloudinary.url(document.publicId, {
+  secure: true,
+  sign_url: true,
+  type: 'authenticated',
+  resource_type: document.resourceType || 'image',
+  format: document.format || undefined,
+  expires_at: Math.floor(Date.now() / 1000) + 300,
+});

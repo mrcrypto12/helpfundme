@@ -6,12 +6,19 @@ export interface IUser extends RecordDocument {
   role: 'user' | 'admin'; isVerified: boolean; totalDonated: number; bio: string;
   phone: string; location: string; refreshToken?: string; badges: string[];
   campaignsSupported: number; peopleHelped: number;
-  verification: { identity: boolean; phone: boolean; documents: boolean };
+  verification: {
+    identity: boolean; phone: boolean; documents: boolean;
+    status?: 'not_submitted' | 'pending' | 'verified' | 'rejected';
+    legalName?: string; dateOfBirth?: string; idType?: string; idNumber?: string;
+    documentsList?: Array<{ publicId: string; resourceType: string; format: string; originalName: string }>;
+    adminNotes?: string;
+  };
+  acceptedTermsVersion?: string; acceptedTermsAt?: Date;
   comparePassword(candidate: string): Promise<boolean>;
 }
 
 const User = createModel<IUser>('users', {
-  defaults: { avatar: '', role: 'user', isVerified: false, totalDonated: 0, bio: '', phone: '', location: '', badges: [], campaignsSupported: 0, peopleHelped: 0, verification: { identity: false, phone: false, documents: false } },
+  defaults: { avatar: '', role: 'user', isVerified: false, totalDonated: 0, bio: '', phone: '', location: '', badges: [], campaignsSupported: 0, peopleHelped: 0, verification: { identity: false, phone: false, documents: false, status: 'not_submitted', legalName: '', dateOfBirth: '', idType: '', idNumber: '', documentsList: [], adminNotes: '' }, acceptedTermsVersion: '', acceptedTermsAt: null },
   hidden: ['password', 'refreshToken'],
   beforeSave: async (doc, previous) => {
     doc.email = String(doc.email || '').trim().toLowerCase();

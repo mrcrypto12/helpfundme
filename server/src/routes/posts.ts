@@ -3,6 +3,7 @@ import { protect, optionalAuth } from '../middleware/auth';
 import { postCreationLimiter, uploadLimiter } from '../middleware/rateLimiter';
 import { createPostValidation, commentValidation } from '../middleware/validate';
 import upload from '../middleware/upload';
+import verificationUpload from '../middleware/verificationUpload';
 import {
   createPost,
   getPosts,
@@ -14,6 +15,7 @@ import {
   addComment,
   getMyPosts,
   getRegionStats,
+  reportCampaign,
 } from '../controllers/postController';
 import {
   addCampaignUpdate,
@@ -45,7 +47,7 @@ router.post(
   '/',
   protect,
   postCreationLimiter,
-  upload.array('images', 5),
+  verificationUpload.fields([{ name: 'images', maxCount: 5 }, { name: 'evidence', maxCount: 8 }, { name: 'identityDocuments', maxCount: 4 }]),
   createPostValidation,
   createPost
 );
@@ -63,6 +65,7 @@ router.post('/:id/like', protect, toggleLike);
 router.post('/:id/comments', protect, commentValidation, addComment);
 router.post('/:id/updates', protect, addCampaignUpdate);
 router.post('/:id/thank-donors', protect, thankDonors);
+router.post('/:id/report', protect, reportCampaign);
 
 // Co-organizers
 router.post('/:id/co-organizers', protect, inviteCoOrganizer);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import api, { API_URL } from '../../services/api';
 import { IPost, IDonation, IComment, IWithdrawal, CATEGORY_LABELS } from '../../types';
 import { formatCurrency, formatDateTime, getInitials } from '../../utils/helpers';
 import toast from 'react-hot-toast';
@@ -13,6 +13,7 @@ const AdminPostDetailPage: React.FC = () => {
   const [donations, setDonations] = useState<IDonation[]>([]);
   const [comments, setComments] = useState<IComment[]>([]);
   const [withdrawals, setWithdrawals] = useState<IWithdrawal[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [note, setNote] = useState('');
 
@@ -26,6 +27,7 @@ const AdminPostDetailPage: React.FC = () => {
       setDonations(data.donations);
       setComments(data.comments);
       setWithdrawals(data.withdrawals);
+      setReports(data.reports || []);
     } catch {
       toast.error('Error loading post');
       navigate('/admin/posts');
@@ -97,7 +99,20 @@ const AdminPostDetailPage: React.FC = () => {
           </div>
           <p style={{ marginTop: 16, fontSize: '0.88rem', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>{post.description}</p>
 
-          {post.status === 'pending' && (
+          <h3 style={{ marginTop: 20, marginBottom: 10 }}>Applicant & beneficiary verification</h3>
+          <div className="info-box">
+            {Object.entries(post.applicantVerification || {}).map(([key, value]) => <div className="info-box-row" key={key}><span className="info-box-label">{key}</span><span className="info-box-value">{value}</span></div>)}
+            <div className="info-box-row"><span className="info-box-label">Raising for</span><span className="info-box-value">{post.beneficiaryType === 'other' ? 'Another person' : 'Self'}</span></div>
+            <div className="info-box-row"><span className="info-box-label">Publication consent</span><span className="info-box-value">{post.consentConfirmed ? 'Confirmed' : 'Missing'}</span></div>
+            <div className="info-box-row"><span className="info-box-label">Guardian consent</span><span className="info-box-value">{post.guardianConsent ? 'Confirmed' : 'Not supplied / not applicable'}</span></div>
+          </div>
+          {post.beneficiaryVerification && <div className="info-box" style={{ marginTop: 10 }}>{Object.entries(post.beneficiaryVerification).map(([key, value]) => <div className="info-box-row" key={key}><span className="info-box-label">Beneficiary {key}</span><span className="info-box-value">{value}</span></div>)}</div>}
+
+          <h3 style={{ marginTop: 20, marginBottom: 10 }}>Submitted evidence</h3>
+          <p style={{ color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>{post.evidenceSummary || 'No evidence summary supplied.'}</p>
+          {(post.evidenceDocuments || []).map((document, index) => <a key={index} className="btn btn-secondary btn-sm" style={{ margin: '8px 8px 0 0' }} href={`${API_URL}/admin/posts/${id}/evidence/${index}`} target="_blank" rel="noreferrer">View / download {document.originalName}</a>)}
+
+          {['pending', 'declined', 'suspended'].includes(post.status) && (
             <div style={{ marginTop: 20 }}>
               <div className="form-group">
                 <label className="form-label">Admin Note / Decline Reason</label>
@@ -109,6 +124,7 @@ const AdminPostDetailPage: React.FC = () => {
               </div>
             </div>
           )}
+          {post.status === 'approved' && <button className="btn btn-danger" style={{ marginTop: 16 }} onClick={() => handleStatusChange('suspended')}>Suspend Campaign</button>}
         </div>
 
         <div className="card" style={{ padding: 24 }}>
@@ -127,6 +143,11 @@ const AdminPostDetailPage: React.FC = () => {
             ))
           )}
         </div>
+      </div>
+
+      <div className="detail-section" style={{ marginTop: 24 }}>
+        <h3 style={{ marginBottom: 12 }}>Confidential reports ({reports.length})</h3>
+        {reports.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No reports submitted.</p> : reports.map((report) => <div className="info-box" key={report._id} style={{ marginBottom: 8 }}><div className="info-box-row"><span className="info-box-label">Reporter</span><span>{report.reporter?.name || 'User'}</span></div><p style={{ padding: 10 }}>{report.reason}</p></div>)}
       </div>
 
       <div className="detail-section" style={{ marginTop: 24 }}>
