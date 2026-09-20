@@ -105,7 +105,7 @@ export const donationValidation = [
     .isIn(['post', 'platform']).withMessage('Invalid donation type'),
   body('postId')
     .optional()
-    .isMongoId().withMessage('Invalid post ID'),
+    .isUUID().withMessage('Invalid post ID'),
   body('message')
     .optional()
     .isLength({ max: 500 }).withMessage('Message cannot exceed 500 characters'),
@@ -115,7 +115,7 @@ export const donationValidation = [
 ];
 
 export const mongoIdValidation = [
-  param('id').isMongoId().withMessage('Invalid ID format'),
+  param('id').isUUID().withMessage('Invalid ID format'),
 ];
 
 export const paginationValidation = [
@@ -126,7 +126,7 @@ export const paginationValidation = [
 export const allocateFundsValidation = [
   body('postId')
     .notEmpty().withMessage('Post ID is required')
-    .isMongoId().withMessage('Invalid post ID'),
+    .isUUID().withMessage('Invalid post ID'),
   body('amount')
     .notEmpty().withMessage('Amount is required')
     .isFloat({ min: 1 }).withMessage('Amount must be at least 1'),
