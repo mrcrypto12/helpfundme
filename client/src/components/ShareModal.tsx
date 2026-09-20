@@ -12,6 +12,7 @@ interface ShareModalProps {
   postId: string;
   title: string;
   description?: string;
+  imageUrl?: string;
   amountRaised?: number;
   targetAmount?: number;
 }
@@ -22,6 +23,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
   postId,
   title,
   description,
+  imageUrl,
   amountRaised = 0,
   targetAmount = 0,
 }) => {
@@ -97,6 +99,28 @@ const ShareModal: React.FC<ShareModalProps> = ({
             marginBottom: 20,
             border: '1px solid var(--border)',
           }}>
+            {imageUrl && (
+              <div style={{ position: 'relative', margin: '-16px -16px 14px', overflow: 'hidden', borderRadius: 'var(--radius-md) var(--radius-md) 0 0' }}>
+                <img
+                  src={imageUrl}
+                  alt="Campaign preview"
+                  style={{ display: 'block', width: '100%', aspectRatio: '1.91 / 1', objectFit: 'cover' }}
+                />
+                <span style={{
+                  position: 'absolute',
+                  right: 10,
+                  bottom: 8,
+                  padding: '4px 7px',
+                  borderRadius: 4,
+                  background: 'rgba(0, 0, 0, 0.7)',
+                  color: '#fff',
+                  fontSize: '0.68rem',
+                  fontWeight: 600,
+                }}>
+                  Forgex Company Limited
+                </span>
+              </div>
+            )}
             <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 4 }}>{title}</div>
             {shortDesc && (
               <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 8 }}>

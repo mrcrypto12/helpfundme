@@ -751,6 +751,7 @@ const PostDetailPage: React.FC = () => {
         postId={id || ''}
         title={post.title}
         description={post.description}
+        imageUrl={post.images?.[0]}
         amountRaised={post.amountRaised}
         targetAmount={post.targetAmount}
       />

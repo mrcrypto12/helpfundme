@@ -34,6 +34,31 @@ const CLIENT_URL = (
   process.env.CLIENT_URL || 'http://localhost:5173'
 ).replace(/\/$/, '');
 
+const escapeHtmlAttribute = (value: unknown): string => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/"/g, '&quot;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;');
+
+const buildSocialImageUrl = (imageUrl: string): string => {
+  const uploadMarker = '/image/upload/';
+  try {
+    const parsed = new URL(imageUrl);
+    if (parsed.hostname !== 'res.cloudinary.com') return imageUrl;
+    const markerIndex = imageUrl.indexOf(uploadMarker);
+    if (markerIndex < 0) return imageUrl;
+
+    const transform = [
+      'c_fill,g_auto,w_1200,h_630,q_auto,f_auto',
+      'l_text:Arial_34_bold:Forgex%20Company%20Limited,co_white,bo_2px_solid_black,g_south_east,x_30,y_24',
+    ].join('/');
+    const insertAt = markerIndex + uploadMarker.length;
+    return `${imageUrl.slice(0, insertAt)}${transform}/${imageUrl.slice(insertAt)}`;
+  } catch {
+    return imageUrl;
+  }
+};
+
 // ==================== Security Middleware ====================
 
 app.use(helmet({
@@ -157,9 +182,11 @@ app.use('/api', (_req, res) => {
 // both on one origin makes HTTP-only authentication cookies reliable on mobile.
 if (process.env.NODE_ENV === 'production') {
   const clientDist = path.resolve(__dirname, '../../client/dist');
-  if (!fs.existsSync(path.join(clientDist, 'index.html'))) {
+  const indexHtmlPath = path.join(clientDist, 'index.html');
+  if (!fs.existsSync(indexHtmlPath)) {
     throw new Error(`Client build not found at ${clientDist}`);
   }
+  const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
   app.use(express.static(clientDist, {
     index: false,
     maxAge: '1d',
@@ -169,9 +196,50 @@ if (process.env.NODE_ENV === 'production') {
       }
     },
   }));
+
+  // Social crawlers generally do not execute the React application. Serve
+  // campaign-specific Open Graph metadata from the server for shared links.
+  app.get('/posts/:id', async (req, res, next) => {
+    try {
+      const post = await (await import('./models/Post')).default.findById(req.params.id);
+      if (!post) return next();
+
+      const title = escapeHtmlAttribute(post.title || 'HelpFundMe campaign');
+      const description = escapeHtmlAttribute(
+        String(post.description || 'Support this campaign on HelpFundMe')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 200)
+      );
+      const campaignUrl = `${CLIENT_URL}/posts/${encodeURIComponent(req.params.id)}`;
+      const firstImage = post.images?.[0]
+        ? buildSocialImageUrl(String(post.images[0]))
+        : `${CLIENT_URL}/logos.png`;
+      const metadata = `
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="HelpFundMe · Forgex Company Limited" />
+        <meta property="og:title" content="${title}" />
+        <meta property="og:description" content="${description}" />
+        <meta property="og:image" content="${escapeHtmlAttribute(firstImage)}" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:url" content="${escapeHtmlAttribute(campaignUrl)}" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="${title}" />
+        <meta name="twitter:description" content="${description}" />
+        <meta name="twitter:image" content="${escapeHtmlAttribute(firstImage)}" />
+        <link rel="canonical" href="${escapeHtmlAttribute(campaignUrl)}" />`;
+
+      res.setHeader('Cache-Control', 'public, max-age=300');
+      res.type('html').send(indexHtml.replace('</head>', `${metadata}\n</head>`));
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.get('*', (_req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
-    res.sendFile(path.join(clientDist, 'index.html'));
+    res.sendFile(indexHtmlPath);
   });
 }
 
