@@ -106,7 +106,7 @@ const NotificationBell: React.FC = () => {
       case 'post_approved': return '✅';
       case 'post_declined': return '❌';
       case 'co_organizer_invite': return '🤝';
-      default: return '🔔';
+      default: return '';
     }
   };
 
