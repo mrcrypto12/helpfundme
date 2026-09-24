@@ -46,7 +46,7 @@ const CreatePostPage: React.FC = () => {
       if (draft.formData) setFormData((current) => ({ ...current, ...draft.formData }));
       if (Array.isArray(draft.fundRows)) setFundRows(draft.fundRows);
       if (Number.isInteger(draft.step)) setStep(Math.max(0, Math.min(STEPS.length - 1, draft.step)));
-      toast.success('Restored draft');
+      toast.success('Draft restored');
       draftNoticeShown.current = true;
     } catch { localStorage.removeItem(draftKey); }
   }, [draftKey]);
