@@ -106,9 +106,7 @@ const DonationsPage: React.FC = () => {
             <h1>Donations</h1>
             <p>Track your giving and see the impact you're making</p>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowPlatformDonate(true)}>
-            <HiOutlineGift /> Donate to Platform
-          </button>
+          <button className="btn btn-primary" onClick={() => setShowPlatformDonate(true)}> Donate to Platform </button>
         </div>
       </div>
 
@@ -236,7 +234,7 @@ const DonationsPage: React.FC = () => {
         <div className="modal-overlay" onClick={() => setShowPlatformDonate(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>🌐 Donate to Platform Fund</h2>
+              <h2>Donate to Platform Fund</h2>
               <button className="modal-close" onClick={() => setShowPlatformDonate(false)}>✕</button>
             </div>
             <div className="modal-body">
