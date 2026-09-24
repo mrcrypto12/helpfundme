@@ -6,6 +6,7 @@ import { AuthRequest } from '../middleware/auth';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/token';
 import { uploadSecureDocument } from '../utils/cloudinary';
 import { addAudienceContact, isResendEnabled, sendVerificationEmail } from '../services/resend';
+import Notification from '../models/Notification';
 
 export const TERMS_VERSION = '2026-09-20';
 
@@ -308,6 +309,9 @@ export const submitVerification = async (req: AuthRequest, res: Response): Promi
   try {
     const user = await User.findById(req.user?._id);
     if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+    if (user.verification?.identity) {
+      res.status(409).json({ message: 'Verified identity details are locked. Report an issue if a correction is required.' }); return;
+    }
     const { legalName, dateOfBirth, idType, idNumber, phone } = req.body;
     if (![legalName, dateOfBirth, idType, idNumber, phone].every((v) => String(v || '').trim())) {
       res.status(400).json({ message: 'Legal name, date of birth, ID type, ID number, and phone are required' }); return;
@@ -327,6 +331,34 @@ export const submitVerification = async (req: AuthRequest, res: Response): Promi
     await user.save();
     res.json({ message: 'Verification submitted for review', user: user.toJSON() });
   } catch (error) { console.error(error); res.status(500).json({ message: 'Unable to submit verification' }); }
+};
+
+export const reportVerificationIssue = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const user = await User.findById(req.user?._id);
+    if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+    if (!user.verification?.identity) { res.status(400).json({ message: 'Only verified identity details can be reported here' }); return; }
+    if (user.verification?.issueReportedAt) { res.status(409).json({ message: 'This issue has already been reported' }); return; }
+
+    const admins = await User.find({ role: 'admin', accountStatus: { $ne: 'deactivated' } });
+    if (!admins.length) { res.status(503).json({ message: 'No active administrator is currently available' }); return; }
+
+    const reportedAt = new Date();
+    await Notification.insertMany(admins.map((admin: any) => ({
+      recipient: admin._id,
+      type: 'identity_issue_reported',
+      title: 'Verified identity issue reported',
+      message: `${user.name} (${user.email}) reported a problem with their locked identity details. Contact the user and review their verification record.`,
+      relatedUser: user._id,
+      isRead: false,
+    })));
+    user.verification = { ...(user.verification || {}), issueReportedAt: reportedAt };
+    await user.save();
+    res.json({ message: 'Issue reported. An administrator has been notified.', user: user.toJSON() });
+  } catch (error) {
+    console.error('Report verification issue error:', error);
+    res.status(500).json({ message: 'Unable to report the issue' });
+  }
 };
 
 // @desc    Logout user

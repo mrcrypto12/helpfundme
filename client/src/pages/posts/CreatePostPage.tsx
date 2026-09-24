@@ -46,7 +46,7 @@ const CreatePostPage: React.FC = () => {
       if (draft.formData) setFormData((current) => ({ ...current, ...draft.formData }));
       if (Array.isArray(draft.fundRows)) setFundRows(draft.fundRows);
       if (Number.isInteger(draft.step)) setStep(Math.max(0, Math.min(STEPS.length - 1, draft.step)));
-      toast.success('Your interrupted campaign draft was restored. Please reselect files before submitting.');
+      toast.success('Restored draft');
       draftNoticeShown.current = true;
     } catch { localStorage.removeItem(draftKey); }
   }, [draftKey]);
@@ -57,7 +57,7 @@ const CreatePostPage: React.FC = () => {
       localStorage.setItem(draftKey, JSON.stringify({ formData, fundRows, step, savedAt: new Date().toISOString() }));
       window.dispatchEvent(new Event('helpfundme-draft-updated'));
       if (!draftNoticeShown.current && (formData.title || formData.description)) {
-        toast.success('Progress saved to Drafts in My Posts');
+        toast.success('saved to drafts');
         draftNoticeShown.current = true;
       }
     }, 700);

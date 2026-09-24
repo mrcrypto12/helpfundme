@@ -11,6 +11,7 @@ interface Notification {
   message: string;
   isRead: boolean;
   relatedPost?: { _id: string; title: string };
+  relatedUser?: { _id: string; name: string };
   createdAt: string;
 }
 
@@ -85,6 +86,9 @@ const NotificationBell: React.FC = () => {
     if (notif.relatedPost?._id) {
       navigate(`/posts/${notif.relatedPost._id}`);
       setShowPanel(false);
+    } else if (notif.type === 'identity_issue_reported' && notif.relatedUser?._id) {
+      navigate(`/admin/users/${notif.relatedUser._id}`);
+      setShowPanel(false);
     }
   };
 
@@ -97,6 +101,7 @@ const NotificationBell: React.FC = () => {
   };
 
   const getNotifIcon = (type: string) => {
+    if (type === 'identity_issue_reported') return '⚠️';
     switch (type) {
       case 'donation_received': return '💚';
       case 'campaign_milestone': return '';

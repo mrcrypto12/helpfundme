@@ -28,7 +28,7 @@ const SensitiveImage: React.FC<SensitiveImageProps> = ({ src, alt, className = '
       {!revealed && (
         <button type="button" className="sensitive-image-reveal" onClick={reveal} aria-label={`Reveal image for ${alt}`}>
           <HiOutlineEye aria-hidden="true" />
-          <span>Potentially sensitive image</span>
+          <span>Sensitive image</span>
           <small>Tap to view</small>
         </button>
       )}

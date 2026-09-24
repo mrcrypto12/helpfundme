@@ -9,6 +9,7 @@ export interface IVerification {
   idNumber?: string;
   documentsList?: Array<{ originalName: string; publicId: string }>;
   adminNotes?: string;
+  issueReportedAt?: string;
 }
 
 export interface IUser {

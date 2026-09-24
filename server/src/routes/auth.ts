@@ -17,6 +17,7 @@ import {
   resendEmailOtp,
   verifyEmailOtp,
   requestPhoneOtp,
+  reportVerificationIssue,
 } from '../controllers/authController';
 import verificationUpload from '../middleware/verificationUpload';
 
@@ -85,6 +86,7 @@ router.post('/email/verify', protect, authLimiter, verifyEmailOtp);
 router.post('/email/resend', protect, authLimiter, resendEmailOtp);
 router.post('/phone/send-otp', protect, authLimiter, requestPhoneOtp);
 router.post('/verification', protect, verificationUpload.array('documents', 4), submitVerification);
+router.post('/verification/report-issue', protect, authLimiter, reportVerificationIssue);
 router.post('/logout', protect, logout);
 
 export default router;

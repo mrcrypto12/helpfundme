@@ -12,6 +12,7 @@ export interface IUser extends RecordDocument {
     legalName?: string; dateOfBirth?: string; idType?: string; idNumber?: string;
     documentsList?: Array<{ publicId: string; resourceType: string; format: string; originalName: string }>;
     adminNotes?: string;
+    issueReportedAt?: Date;
   };
   acceptedTermsVersion?: string; acceptedTermsAt?: Date;
   accountStatus?: 'active' | 'deactivated'; deactivatedAt?: Date;
@@ -20,7 +21,7 @@ export interface IUser extends RecordDocument {
 }
 
 const User = createModel<IUser>('users', {
-  defaults: { avatar: '', role: 'user', accountStatus: 'active', emailVerified: false, emailVerificationAttempts: 0, isVerified: false, totalDonated: 0, bio: '', phone: '', location: '', badges: [], campaignsSupported: 0, peopleHelped: 0, verification: { identity: false, phone: false, documents: false, status: 'not_submitted', legalName: '', dateOfBirth: '', idType: '', idNumber: '', documentsList: [], adminNotes: '' }, acceptedTermsVersion: '', acceptedTermsAt: null },
+  defaults: { avatar: '', role: 'user', accountStatus: 'active', emailVerified: false, emailVerificationAttempts: 0, isVerified: false, totalDonated: 0, bio: '', phone: '', location: '', badges: [], campaignsSupported: 0, peopleHelped: 0, verification: { identity: false, phone: false, documents: false, status: 'not_submitted', legalName: '', dateOfBirth: '', idType: '', idNumber: '', documentsList: [], adminNotes: '', issueReportedAt: null }, acceptedTermsVersion: '', acceptedTermsAt: null },
   hidden: ['password', 'refreshToken', 'emailVerificationCodeHash', 'emailVerificationExpiresAt', 'emailVerificationAttempts'],
   beforeSave: async (doc, previous) => {
     doc.email = String(doc.email || '').trim().toLowerCase();
