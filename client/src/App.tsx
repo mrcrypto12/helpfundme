@@ -11,6 +11,7 @@ import Navbar from './components/layout/Navbar';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
+import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 
 import DashboardPage from './pages/dashboard/DashboardPage';
 import MapView from './pages/dashboard/MapView';
@@ -41,6 +42,7 @@ const ProtectedRoute: React.FC<{ adminOnly?: boolean }> = ({ adminOnly = false }
   }
 
   if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'admin' && !user.emailVerified) return <Navigate to="/verify-email" replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/dashboard" replace />;
 
   return <Outlet />;
@@ -93,13 +95,12 @@ const App: React.FC = () => {
       <AuthProvider>
         <Toaster
           position="top-right"
+          containerClassName="toast-container"
           toastOptions={{
-            style: {
-              background: '#1E2536',
-              color: '#F0F2F5',
-              border: '1px solid #232A3B',
-              fontFamily: 'Inter, sans-serif',
-            },
+            className: 'toast-custom',
+            duration: 4200,
+            success: { iconTheme: { primary: '#4ade80', secondary: '#102116' } },
+            error: { iconTheme: { primary: '#fb7185', secondary: '#2b1117' } },
           }}
         />
         <LegalAcceptanceGate />
@@ -108,6 +109,7 @@ const App: React.FC = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>

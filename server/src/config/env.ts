@@ -26,6 +26,9 @@ export const validateEnvironment = (): void => {
   }
 
   if (process.env.NODE_ENV === 'production') {
+    if (process.env.RESEND_ENABLED === 'true' && (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL)) {
+      throw new Error('RESEND_API_KEY and RESEND_FROM_EMAIL are required in production');
+    }
     const clientUrl = new URL(process.env.CLIENT_URL!);
     if (clientUrl.protocol !== 'https:') throw new Error('CLIENT_URL must use HTTPS in production');
     if (!process.env.GOOGLE_CALLBACK_URL?.startsWith('https://') && googleValues.every(Boolean)) {

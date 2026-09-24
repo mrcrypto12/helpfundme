@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { IPost, CATEGORY_LABELS, GHANA_REGIONS } from '../../types';
 import { formatCurrency, timeAgo } from '../../utils/helpers';
 import { HiOutlineMapPin, HiOutlineEye, HiOutlineHeart, HiOutlineUsers } from 'react-icons/hi2';
+import SensitiveImage from '../../components/SensitiveImage';
 
 const QUICK_FILTERS = [
   { label: 'Nearing Goal', sort: 'almost-funded', severity: 'all' },
@@ -69,7 +70,7 @@ const DashboardPage: React.FC = () => {
     return (
       <div key={post._id} className="post-card" onClick={() => navigate(`/posts/${post._id}`)}>
         {post.images?.[0] ? (
-          <img src={post.images[0]} alt={post.title} className="post-card-image" />
+          <SensitiveImage src={post.images[0]} alt={post.title} className="post-card-image" />
         ) : (
           <div className="post-card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'var(--text-muted)' }}>
             No image uploads

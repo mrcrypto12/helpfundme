@@ -31,9 +31,9 @@ const RegisterPage: React.FC = () => {
   const finishRegistration = async () => {
     setShowLegal(false); setLoading(true);
     try {
-      await register(formData.name, formData.email, formData.password, true);
+      const registeredUser = await register(formData.name, formData.email, formData.password, true);
       toast.success('Account created successfully!');
-      navigate('/dashboard');
+      navigate(registeredUser.emailVerified ? '/dashboard' : '/verify-email');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Registration failed');
     } finally {

@@ -11,6 +11,7 @@ import AuditLog from '../models/AuditLog';
 import CampaignReport from '../models/CampaignReport';
 import { secureDocumentUrl } from '../utils/cloudinary';
 import Notification from '../models/Notification';
+import { isResendEnabled, sendTransactionalEmail } from '../services/resend';
 
 // @desc    Get admin dashboard stats
 // @route   GET /api/admin/stats
@@ -177,6 +178,8 @@ export const updatePostStatus = async (req: AuthRequest, res: Response): Promise
       const donorIds = await Donation.distinct('donor', { post: post._id, paymentStatus: 'success' });
       if (donorIds.length) await Notification.insertMany(donorIds.map((recipient) => ({ recipient, type: 'campaign_suspended', title: 'Campaign review update', message: `The campaign "${post.title}" has been paused while a confidential review is completed. We will provide further updates when appropriate.`, relatedPost: post._id })));
     }
+    const author = await User.findById(existingPost.author?._id || existingPost.author);
+    if (author?.email && isResendEnabled()) sendTransactionalEmail({ to: author.email, subject: `Campaign ${status}: ${post.title}`, html: `<p>Hello ${author.name},</p><p>Your campaign <strong>${post.title}</strong> is now <strong>${status}</strong>.</p><p>${adminNotes || declineReason || 'Sign in to HelpFundMe for details.'}</p><p>Forgex Company Limited · HelpFundMe</p>` }).catch((error) => console.warn('Campaign email failed:', error.message));
 
     res.json({ message: `Post ${status}`, post });
   } catch (error) {
@@ -195,14 +198,14 @@ export const downloadUserDocument = async (req: Request, res: Response): Promise
   const user = await User.findById(req.params.id);
   const document = user?.verification?.documentsList?.[Number(req.params.index)];
   if (!document) { res.status(404).json({ message: 'Document not found' }); return; }
-  res.redirect(secureDocumentUrl(document));
+  res.redirect(secureDocumentUrl(document, req.query.download === '1'));
 };
 
 export const downloadPostEvidence = async (req: Request, res: Response): Promise<void> => {
   const post = await Post.findById(req.params.id);
   const document = post?.evidenceDocuments?.[Number(req.params.index)];
   if (!document) { res.status(404).json({ message: 'Evidence not found' }); return; }
-  res.redirect(secureDocumentUrl(document));
+  res.redirect(secureDocumentUrl(document, req.query.download === '1'));
 };
 
 // @desc    Get all users
@@ -255,6 +258,22 @@ export const verifyUserIdentity = async (req: AuthRequest, res: Response): Promi
 export const getCampaignReports = async (_req: Request, res: Response): Promise<void> => {
   const reports = await CampaignReport.find().populate('post', 'title status').populate('reporter', 'name email').sort({ createdAt: -1 });
   res.json({ reports });
+};
+
+export const toggleUserAccount = async (req: AuthRequest, res: Response): Promise<void> => {
+  const user = await User.findById(req.params.id);
+  if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+  if (user.role === 'admin') { res.status(400).json({ message: 'Administrator accounts cannot be deactivated here' }); return; }
+  const deactivate = user.accountStatus !== 'deactivated';
+  user.accountStatus = deactivate ? 'deactivated' : 'active';
+  user.deactivatedAt = deactivate ? new Date() : undefined;
+  user.refreshToken = '';
+  await user.save();
+  if (deactivate) await Post.updateMany({ author: user._id }, { isActive: false, suspendedByAccount: true });
+  else await Post.updateMany({ author: user._id, status: 'approved', suspendedByAccount: true }, { isActive: true, suspendedByAccount: false });
+  await AuditLog.create({ actor: req.user?._id, action: deactivate ? 'user.deactivated' : 'user.activated', targetType: 'user', targetId: user._id, note: String(req.body.note || '') });
+  if (isResendEnabled()) sendTransactionalEmail({ to: user.email, subject: `HelpFundMe account ${deactivate ? 'deactivated' : 'activated'}`, html: `<p>Hello ${user.name},</p><p>Your HelpFundMe account has been ${deactivate ? 'deactivated' : 'activated'}.</p><p>${req.body.note || 'Contact support if you need assistance.'}</p>` }).catch((error) => console.warn('Account status email failed:', error.message));
+  res.json({ message: deactivate ? 'Account deactivated' : 'Account activated', user });
 };
 
 // @desc    Get all donation transactions

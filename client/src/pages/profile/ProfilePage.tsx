@@ -4,6 +4,7 @@ import api from '../../services/api';
 import { getInitials } from '../../utils/helpers';
 import { BADGE_META } from '../../utils/badges';
 import toast from 'react-hot-toast';
+import PhoneInput from '../../components/PhoneInput';
 
 const ProfilePage: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -17,6 +18,8 @@ const ProfilePage: React.FC = () => {
   });
   const [verificationData, setVerificationData] = useState({ legalName: user?.verification?.legalName || '', dateOfBirth: user?.verification?.dateOfBirth || '', idType: user?.verification?.idType || 'ghana_card', idNumber: user?.verification?.idNumber || '', phone: user?.phone || '' });
   const [documents, setDocuments] = useState<File[]>([]);
+  const [editingVerification, setEditingVerification] = useState(false);
+  const [submittingVerification, setSubmittingVerification] = useState(false);
 
   const handleSave = async () => {
     setLoading(true);
@@ -36,11 +39,14 @@ const ProfilePage: React.FC = () => {
   const verified = user?.verification?.identity;
 
   const submitVerification = async () => {
+    if (submittingVerification) return;
+    setSubmittingVerification(true);
     const fd = new FormData();
     Object.entries(verificationData).forEach(([key, value]) => fd.append(key, value));
     documents.forEach((file) => fd.append('documents', file));
-    try { const { data } = await api.post('/auth/verification', fd, { headers: { 'Content-Type': 'multipart/form-data' } }); updateUser(data.user); toast.success(data.message); }
+    try { const { data } = await api.post('/auth/verification', fd, { headers: { 'Content-Type': 'multipart/form-data' } }); updateUser(data.user); setEditingVerification(false); setDocuments([]); toast.success(data.message); }
     catch (error: any) { toast.error(error.response?.data?.message || 'Verification submission failed'); }
+    finally { setSubmittingVerification(false); }
   };
 
   return (
@@ -101,7 +107,7 @@ const ProfilePage: React.FC = () => {
             </div>
             <div className="form-group">
               <label className="form-label">Phone</label>
-              <input className="form-input" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+233..." />
+              <PhoneInput value={formData.phone} onChange={(phone) => setFormData({ ...formData, phone })} />
             </div>
             <div className="form-group">
               <label className="form-label">Location</label>
@@ -127,15 +133,15 @@ const ProfilePage: React.FC = () => {
         )}
       </div>
       <div className="card" style={{ padding: 24, marginBottom: 20 }}>
-        <h3>Identity verification</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}><h3>Identity verification</h3>{!editingVerification && <button className="btn btn-secondary btn-sm" onClick={() => setEditingVerification(true)}>Edit</button>}</div>
         <p style={{ color: 'var(--text-secondary)', margin: '8px 0 16px' }}>Required before campaign approval. Documents remain private and are available only to authorized reviewers.</p>
-        <div className="form-group"><label className="form-label">Full legal name</label><input className="form-input" value={verificationData.legalName} onChange={(e) => setVerificationData({ ...verificationData, legalName: e.target.value })} /></div>
-        <div className="form-group"><label className="form-label">Date of birth</label><input type="date" className="form-input" value={verificationData.dateOfBirth} onChange={(e) => setVerificationData({ ...verificationData, dateOfBirth: e.target.value })} /></div>
-        <div className="form-group"><label className="form-label">ID type</label><select className="form-input" value={verificationData.idType} onChange={(e) => setVerificationData({ ...verificationData, idType: e.target.value })}><option value="ghana_card">Ghana Card</option><option value="passport">Passport</option><option value="drivers_licence">Driver's licence</option><option value="other">Other lawful ID</option></select></div>
-        <div className="form-group"><label className="form-label">ID number</label><input className="form-input" value={verificationData.idNumber} onChange={(e) => setVerificationData({ ...verificationData, idNumber: e.target.value })} /></div>
-        <div className="form-group"><label className="form-label">Phone</label><input className="form-input" value={verificationData.phone} onChange={(e) => setVerificationData({ ...verificationData, phone: e.target.value })} /></div>
-        <div className="form-group"><label className="form-label">ID documents (PDF/JPG/PNG, max 10MB)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => setDocuments(Array.from(e.target.files || []))} /></div>
-        <button className="btn btn-primary" onClick={submitVerification}>Submit for verification</button>
+        <div className="form-group"><label className="form-label">Full legal name</label><input disabled={!editingVerification} className="form-input" value={verificationData.legalName} onChange={(e) => setVerificationData({ ...verificationData, legalName: e.target.value })} /></div>
+        <div className="form-group"><label className="form-label">Date of birth</label><input disabled={!editingVerification} type="date" className="form-input" value={verificationData.dateOfBirth} onChange={(e) => setVerificationData({ ...verificationData, dateOfBirth: e.target.value })} /></div>
+        <div className="form-group"><label className="form-label">ID type</label><select disabled={!editingVerification} className="form-input" value={verificationData.idType} onChange={(e) => setVerificationData({ ...verificationData, idType: e.target.value })}><option value="ghana_card">Ghana Card</option><option value="passport">Passport</option><option value="drivers_licence">Driver's licence</option><option value="other">Other lawful ID</option></select></div>
+        <div className="form-group"><label className="form-label">ID number</label><input disabled={!editingVerification} className="form-input" value={verificationData.idNumber} onChange={(e) => setVerificationData({ ...verificationData, idNumber: e.target.value })} /></div>
+        <div className="form-group"><label className="form-label">Phone</label><PhoneInput disabled={!editingVerification} value={verificationData.phone} onChange={(phone) => setVerificationData({ ...verificationData, phone })} /><button className="btn btn-secondary btn-sm" style={{ marginTop: 8 }} disabled title="SMS provider is not configured yet">Send phone OTP (coming soon)</button></div>
+        {editingVerification && <div className="form-group"><label className="form-label">ID documents (PDF/JPG/PNG, max 10MB)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => setDocuments(Array.from(e.target.files || []))} /></div>}
+        {editingVerification && <div style={{ display: 'flex', gap: 8 }}><button className="btn btn-primary" onClick={submitVerification} disabled={submittingVerification || user?.verification?.status === 'pending'}>{submittingVerification ? 'Submitting...' : user?.verification?.status === 'pending' ? 'Submitted for review' : 'Submit for verification'}</button><button className="btn btn-secondary" onClick={() => setEditingVerification(false)} disabled={submittingVerification}>Cancel</button></div>}
         <p style={{ marginTop: 10, color: 'var(--text-muted)' }}>Status: {user?.verification?.status || 'not_submitted'}</p>
       </div>
     </div>

@@ -38,6 +38,10 @@ export const protect = async (
       res.status(401).json({ message: 'User not found' });
       return;
     }
+    if (user.accountStatus === 'deactivated') {
+      res.status(403).json({ message: 'This account has been deactivated. Contact support if you believe this is an error.', code: 'ACCOUNT_DEACTIVATED' });
+      return;
+    }
 
     req.user = user;
     next();

@@ -54,11 +54,10 @@ export const uploadSecureDocument = (
   streamifier.createReadStream(file.buffer).pipe(stream);
 });
 
-export const secureDocumentUrl = (document: any): string => cloudinary.url(document.publicId, {
-  secure: true,
-  sign_url: true,
-  type: 'authenticated',
-  resource_type: document.resourceType || 'image',
-  format: document.format || undefined,
-  expires_at: Math.floor(Date.now() / 1000) + 300,
-});
+export const secureDocumentUrl = (document: any, download = false): string =>
+  cloudinary.utils.private_download_url(document.publicId, document.format || '', {
+    type: 'authenticated',
+    resource_type: document.resourceType || 'image',
+    expires_at: Math.floor(Date.now() / 1000) + 300,
+    attachment: download ? document.originalName || true : false,
+  });

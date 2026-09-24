@@ -231,6 +231,12 @@ export const getPost = async (req: Request, res: Response): Promise<void> => {
     }
 
     const userId = (req as any).user?._id;
+    const isOwner = userId && String(post.author?._id || post.author) === String(userId);
+    const isAdmin = (req as any).user?.role === 'admin';
+    if ((!post.isActive || post.status !== 'approved') && !isOwner && !isAdmin) {
+      res.status(404).json({ message: 'Post not found' });
+      return;
+    }
     if (userId) {
       const SIX_HOURS = 6 * 60 * 60 * 1000;
       const existingView = await PostView.findOne({ user: userId, post: post._id });

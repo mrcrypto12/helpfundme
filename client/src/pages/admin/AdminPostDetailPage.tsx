@@ -111,7 +111,7 @@ const AdminPostDetailPage: React.FC = () => {
 
           <h3 style={{ marginTop: 20, marginBottom: 10 }}>Submitted evidence</h3>
           <p style={{ color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>{post.evidenceSummary || 'No evidence summary supplied.'}</p>
-          {(post.evidenceDocuments || []).map((document, index) => <a key={index} className="btn btn-secondary btn-sm" style={{ margin: '8px 8px 0 0' }} href={`${API_URL}/admin/posts/${id}/evidence/${index}`} target="_blank" rel="noreferrer">View / download {document.originalName}</a>)}
+          {(post.evidenceDocuments || []).map((document, index) => <span key={index} style={{ display: 'inline-flex', gap: 6, margin: '8px 8px 0 0' }}><a className="btn btn-secondary btn-sm" href={`${API_URL}/admin/posts/${id}/evidence/${index}`} target="_blank" rel="noreferrer">View {document.originalName}</a><a className="btn btn-ghost btn-sm" href={`${API_URL}/admin/posts/${id}/evidence/${index}?download=1`}>Download</a></span>)}
 
           {['pending', 'declined', 'suspended'].includes(post.status) && (
             <div style={{ marginTop: 20 }}>

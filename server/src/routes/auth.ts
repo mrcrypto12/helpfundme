@@ -14,6 +14,9 @@ import {
   logout,
   acceptTerms,
   submitVerification,
+  resendEmailOtp,
+  verifyEmailOtp,
+  requestPhoneOtp,
 } from '../controllers/authController';
 import verificationUpload from '../middleware/verificationUpload';
 
@@ -78,6 +81,9 @@ router.get(
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 router.post('/accept-terms', protect, acceptTerms);
+router.post('/email/verify', protect, authLimiter, verifyEmailOtp);
+router.post('/email/resend', protect, authLimiter, resendEmailOtp);
+router.post('/phone/send-otp', protect, authLimiter, requestPhoneOtp);
 router.post('/verification', protect, verificationUpload.array('documents', 4), submitVerification);
 router.post('/logout', protect, logout);
 

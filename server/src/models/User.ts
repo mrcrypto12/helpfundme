@@ -14,12 +14,14 @@ export interface IUser extends RecordDocument {
     adminNotes?: string;
   };
   acceptedTermsVersion?: string; acceptedTermsAt?: Date;
+  accountStatus?: 'active' | 'deactivated'; deactivatedAt?: Date;
+  emailVerified?: boolean; emailVerificationCodeHash?: string; emailVerificationExpiresAt?: Date; emailVerificationAttempts?: number;
   comparePassword(candidate: string): Promise<boolean>;
 }
 
 const User = createModel<IUser>('users', {
-  defaults: { avatar: '', role: 'user', isVerified: false, totalDonated: 0, bio: '', phone: '', location: '', badges: [], campaignsSupported: 0, peopleHelped: 0, verification: { identity: false, phone: false, documents: false, status: 'not_submitted', legalName: '', dateOfBirth: '', idType: '', idNumber: '', documentsList: [], adminNotes: '' }, acceptedTermsVersion: '', acceptedTermsAt: null },
-  hidden: ['password', 'refreshToken'],
+  defaults: { avatar: '', role: 'user', accountStatus: 'active', emailVerified: false, emailVerificationAttempts: 0, isVerified: false, totalDonated: 0, bio: '', phone: '', location: '', badges: [], campaignsSupported: 0, peopleHelped: 0, verification: { identity: false, phone: false, documents: false, status: 'not_submitted', legalName: '', dateOfBirth: '', idType: '', idNumber: '', documentsList: [], adminNotes: '' }, acceptedTermsVersion: '', acceptedTermsAt: null },
+  hidden: ['password', 'refreshToken', 'emailVerificationCodeHash', 'emailVerificationExpiresAt', 'emailVerificationAttempts'],
   beforeSave: async (doc, previous) => {
     doc.email = String(doc.email || '').trim().toLowerCase();
     if (doc.password && doc.password !== previous?.password && !String(doc.password).startsWith('$2')) doc.password = await bcrypt.hash(doc.password, 12);

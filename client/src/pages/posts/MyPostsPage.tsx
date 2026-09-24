@@ -4,9 +4,12 @@ import api from '../../services/api';
 import { IPost, CATEGORY_LABELS } from '../../types';
 import { formatCurrency, formatDateTime } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
+import PhoneInput from '../../components/PhoneInput';
 
 const MyPostsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,8 +24,22 @@ const MyPostsPage: React.FC = () => {
   const [momoPhone, setMomoPhone] = useState('');
   const [momoName, setMomoName] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [draft, setDraft] = useState<any>(null);
 
-  useEffect(() => { fetchMyPosts(); }, []);
+  useEffect(() => {
+    fetchMyPosts();
+    const loadDraft = () => {
+      const raw = user?._id ? localStorage.getItem(`helpfundme_campaign_draft_${user._id}`) : null;
+      try { setDraft(raw ? JSON.parse(raw) : null); } catch { setDraft(null); }
+    };
+    loadDraft(); window.addEventListener('helpfundme-draft-updated', loadDraft);
+    return () => window.removeEventListener('helpfundme-draft-updated', loadDraft);
+  }, [user?._id]);
+
+  const deleteDraft = () => {
+    if (!user?._id || !confirm('Permanently delete this local draft?')) return;
+    localStorage.removeItem(`helpfundme_campaign_draft_${user._id}`); setDraft(null); toast.success('Draft deleted');
+  };
 
   const fetchMyPosts = async () => {
     try {
@@ -96,7 +113,9 @@ const MyPostsPage: React.FC = () => {
         </div>
       </div>
 
-      {posts.length === 0 ? (
+      {draft && <div className="card" style={{ padding: 20, marginBottom: 20, borderColor: 'var(--gold)' }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}><div><span className="status-badge status-pending">Draft</span><h3 style={{ marginTop: 8 }}>{draft.formData?.title || 'Untitled campaign'}</h3><p style={{ color: 'var(--text-muted)' }}>Saved {draft.savedAt ? new Date(draft.savedAt).toLocaleString() : 'recently'}. Uploaded files must be selected again.</p></div><div style={{ display: 'flex', gap: 8 }}><button className="btn btn-primary" onClick={() => navigate('/posts/create')}>Continue</button><button className="btn btn-danger" onClick={deleteDraft}>Delete permanently</button></div></div></div>}
+
+      {posts.length === 0 && !draft ? (
         <div className="empty-state">
           <div className="empty-state-icon">˙◠˙</div>
           <h3>No posts yet</h3>
@@ -188,7 +207,7 @@ const MyPostsPage: React.FC = () => {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Mobile Money Number</label>
-                    <input className="form-input" placeholder="e.g. 024XXXXXXX" value={momoPhone} onChange={(e) => setMomoPhone(e.target.value)} />
+                    <PhoneInput value={momoPhone} onChange={setMomoPhone} placeholder="Mobile money number" />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Registered Name</label>

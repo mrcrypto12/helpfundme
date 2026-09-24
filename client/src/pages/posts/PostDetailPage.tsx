@@ -7,6 +7,7 @@ import { formatCurrency, formatDateTime, timeAgo, getInitials, getSeverityLabel 
 import ShareModal from '../../components/ShareModal';
 import CampaignTimeline from '../../components/CampaignTimeline';
 import toast from 'react-hot-toast';
+import SensitiveImage from '../../components/SensitiveImage';
 import {
   HiOutlineHeart, HiHeart, HiOutlineChatBubbleLeft,
   HiOutlineShare, HiOutlineEye, HiOutlineMapPin,
@@ -285,7 +286,7 @@ const PostDetailPage: React.FC = () => {
       <div className="post-detail">
         {post.images && post.images.length > 0 && (
           <div className="post-detail-images">
-            <img src={post.images[activeImage]} alt={post.title} />
+            <SensitiveImage key={activeImage} src={post.images[activeImage]} alt={post.title} className="post-detail-main-image" />
             {post.images.length > 1 && (
               <div style={{ display: 'flex', gap: '8px', padding: '12px', justifyContent: 'center', background: 'var(--bg-secondary)' }}>
                 {post.images.map((img, i) => (

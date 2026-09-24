@@ -22,6 +22,7 @@ import recurringDonationRoutes from './routes/recurringDonations';
 import withdrawalRoutes from './routes/withdrawals';
 import refundRoutes from './routes/refunds';
 import helpOfferRoutes from './routes/helpOffers';
+import resendRoutes from './routes/resend';
 
 dotenv.config();
 
@@ -132,7 +133,7 @@ app.use('/api', (req, res, next) => {
   }
 
   // Paystack is server-to-server and authenticates with an HMAC signature.
-  if (req.path === '/donations/webhook') return next();
+  if (req.path === '/donations/webhook' || req.path === '/resend/webhook') return next();
 
   const origin = req.get('origin');
 
@@ -161,6 +162,7 @@ app.use('/api/recurring-donations', recurringDonationRoutes);
 app.use('/api/withdrawals', withdrawalRoutes);
 app.use('/api/refunds', refundRoutes);
 app.use('/api/help-offers', helpOfferRoutes);
+app.use('/api/resend', resendRoutes);
 
 // ==================== Health Check ====================
 
@@ -202,7 +204,7 @@ if (process.env.NODE_ENV === 'production') {
   app.get('/posts/:id', async (req, res, next) => {
     try {
       const post = await (await import('./models/Post')).default.findById(req.params.id);
-      if (!post) return next();
+      if (!post || !post.isActive || post.status !== 'approved') return next();
 
       const title = escapeHtmlAttribute(post.title || 'HelpFundMe campaign');
       const description = escapeHtmlAttribute(

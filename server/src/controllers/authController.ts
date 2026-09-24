@@ -1,10 +1,11 @@
-import { createHash } from 'crypto';
+import { createHash, randomInt } from 'crypto';
 import { CookieOptions, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/token';
 import { uploadSecureDocument } from '../utils/cloudinary';
+import { addAudienceContact, isResendEnabled, sendVerificationEmail } from '../services/resend';
 
 export const TERMS_VERSION = '2026-09-20';
 
@@ -21,6 +22,21 @@ const refreshCookieOptions: CookieOptions = {
   path: '/api/auth/refresh',
 };
 const hashToken = (token: string): string => createHash('sha256').update(token).digest('hex');
+const createEmailOtp = () => String(randomInt(100000, 1000000));
+const setAndSendEmailOtp = async (user: any): Promise<string | undefined> => {
+  if (!isResendEnabled()) return undefined;
+  const code = createEmailOtp();
+  user.emailVerificationCodeHash = hashToken(`${user._id}:${code}`);
+  user.emailVerificationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  user.emailVerificationAttempts = 0;
+  await user.save();
+  if (!process.env.RESEND_API_KEY && process.env.NODE_ENV !== 'production') {
+    console.log(`[DEV EMAIL OTP] ${user.email}: ${code}`);
+    return process.env.EMAIL_DEV_SHOW_OTP === 'true' ? code : undefined;
+  }
+  await sendVerificationEmail(user.email, user.name, code);
+  return undefined;
+};
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -46,7 +62,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Create user
-    const user = await User.create({ name, email, password, acceptedTermsVersion: TERMS_VERSION, acceptedTermsAt: new Date() });
+    const emailVerificationRequired = isResendEnabled();
+    const user = await User.create({ name, email, password, acceptedTermsVersion: TERMS_VERSION, acceptedTermsAt: new Date(), emailVerified: !emailVerificationRequired });
+    let devOtp: string | undefined;
+    let emailSent = true;
+    try { devOtp = await setAndSendEmailOtp(user); }
+    catch (error) { emailSent = false; console.error('Initial verification email failed:', error); }
+    if (emailVerificationRequired) addAudienceContact(user.email, String(user.name).split(' ')[0]).catch((error) => console.warn('Resend audience sync failed:', error.message));
 
     // Generate tokens
     const accessToken = generateAccessToken(user);
@@ -61,8 +83,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
     res.status(201).json({
-      message: 'Account created successfully',
+      message: !emailVerificationRequired ? 'Account created successfully.' : emailSent ? 'Account created. Check your email for the verification code.' : 'Account created, but the verification email could not be sent. Use resend to try again.',
       user: user.toJSON(),
+      emailVerificationRequired,
+      ...(devOtp ? { devOtp } : {}),
     });
   } catch (error: any) {
     console.error('Register error:', error);
@@ -88,6 +112,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       res.status(401).json({ message: 'Invalid email or password' });
       return;
     }
+    if (user.accountStatus === 'deactivated') {
+      res.status(403).json({ message: 'This account has been deactivated. Contact support.' });
+      return;
+    }
+    if (!isResendEnabled() && !user.emailVerified) user.emailVerified = true;
 
     // Check if user has a password (might be Google-only user)
     if (!user.password) {
@@ -141,7 +170,7 @@ export const refreshAccessToken = async (req: Request, res: Response): Promise<v
     const decoded = verifyRefreshToken(token);
     const user = await User.findById(decoded.id).select('+refreshToken');
 
-    if (!user || user.refreshToken !== hashToken(token)) {
+    if (!user || user.accountStatus === 'deactivated' || user.refreshToken !== hashToken(token)) {
       res.status(401).json({ message: 'Invalid refresh token' });
       return;
     }
@@ -205,6 +234,10 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
       res.status(404).json({ message: 'User not found' });
       return;
     }
+    if (!isResendEnabled() && !user.emailVerified) {
+      user.emailVerified = true;
+      await user.save();
+    }
     res.json({ user });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -237,6 +270,38 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
 export const acceptTerms = async (req: AuthRequest, res: Response): Promise<void> => {
   const user = await User.findByIdAndUpdate(req.user?._id, { acceptedTermsVersion: TERMS_VERSION, acceptedTermsAt: new Date() }, { new: true });
   res.json({ message: 'Terms accepted', user });
+};
+
+export const resendEmailOtp = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!isResendEnabled()) { res.status(503).json({ message: 'Email verification is temporarily disabled' }); return; }
+    const user = await User.findById(req.user?._id);
+    if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+    if (user.emailVerified) { res.status(400).json({ message: 'Email is already verified' }); return; }
+    const devOtp = await setAndSendEmailOtp(user);
+    res.json({ message: 'A new verification code has been sent', ...(devOtp ? { devOtp } : {}) });
+  } catch (error: any) { console.error(error); res.status(503).json({ message: 'Unable to send verification email right now' }); }
+};
+
+export const verifyEmailOtp = async (req: AuthRequest, res: Response): Promise<void> => {
+  if (!isResendEnabled()) { res.status(503).json({ message: 'Email verification is temporarily disabled' }); return; }
+  const user = await User.findById(req.user?._id);
+  if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+  if (user.emailVerified) { res.json({ message: 'Email already verified', user }); return; }
+  if (!/^\d{6}$/.test(String(req.body.code || ''))) { res.status(400).json({ message: 'Enter the six-digit code' }); return; }
+  if (!user.emailVerificationExpiresAt || new Date(user.emailVerificationExpiresAt).getTime() < Date.now()) { res.status(400).json({ message: 'Code expired. Request a new code.' }); return; }
+  user.emailVerificationAttempts = Number(user.emailVerificationAttempts || 0) + 1;
+  if (user.emailVerificationAttempts > 5) { await user.save(); res.status(429).json({ message: 'Too many attempts. Request a new code.' }); return; }
+  if (user.emailVerificationCodeHash !== hashToken(`${user._id}:${req.body.code}`)) { await user.save(); res.status(400).json({ message: 'Incorrect verification code' }); return; }
+  user.emailVerified = true; user.emailVerificationCodeHash = ''; user.emailVerificationExpiresAt = undefined; user.emailVerificationAttempts = 0;
+  await user.save();
+  res.json({ message: 'Email verified successfully', user: user.toJSON() });
+};
+
+// Reserved integration point for a future SMS provider. The UI remains
+// disabled until a provider is selected and credentials are configured.
+export const requestPhoneOtp = async (_req: AuthRequest, res: Response): Promise<void> => {
+  res.status(503).json({ message: 'SMS verification is not configured yet', code: 'SMS_PROVIDER_NOT_CONFIGURED' });
 };
 
 export const submitVerification = async (req: AuthRequest, res: Response): Promise<void> => {

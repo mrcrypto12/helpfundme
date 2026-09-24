@@ -7,6 +7,7 @@ import {
   HiOutlineMagnifyingGlass,
   HiOutlineBars3, HiOutlineUser,
   HiOutlineArrowRightOnRectangle, HiOutlineCog6Tooth,
+  HiOutlineSun, HiOutlineMoon,
 } from 'react-icons/hi2';
 
 interface NavbarProps {
@@ -19,6 +20,7 @@ const Navbar: React.FC<NavbarProps> = ({ collapsed, onMobileToggle }) => {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('helpfundme-theme') === 'light' ? 'light' : 'dark'));
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,6 +32,11 @@ const Navbar: React.FC<NavbarProps> = ({ collapsed, onMobileToggle }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('helpfundme-theme', theme);
+  }, [theme]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +68,9 @@ const Navbar: React.FC<NavbarProps> = ({ collapsed, onMobileToggle }) => {
       </div>
 
       <div className="navbar-right">
+        <button className="navbar-btn" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} onClick={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')}>
+          {theme === 'dark' ? <HiOutlineSun /> : <HiOutlineMoon />}
+        </button>
         <NotificationBell />
 
         <div ref={dropdownRef} style={{ position: 'relative' }}>

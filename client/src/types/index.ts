@@ -17,6 +17,8 @@ export interface IUser {
   email: string;
   avatar: string;
   role: 'user' | 'admin';
+  accountStatus?: 'active' | 'deactivated';
+  emailVerified?: boolean;
   isVerified: boolean;
   totalDonated: number;
   bio: string;

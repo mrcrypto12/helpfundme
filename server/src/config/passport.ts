@@ -57,6 +57,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
               if (!user.avatar && profile.photos?.[0]?.value) {
                 user.avatar = profile.photos[0].value;
               }
+              user.emailVerified = true;
               await user.save();
               return done(null, user);
             }
@@ -69,6 +70,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             googleId: profile.id,
             avatar: profile.photos?.[0]?.value || '',
             isVerified: true,
+            emailVerified: true,
           });
 
           done(null, user);

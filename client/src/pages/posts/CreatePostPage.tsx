@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import api from '../../services/api';
@@ -6,6 +6,7 @@ import { GHANA_REGIONS } from '../../types';
 import toast from 'react-hot-toast';
 import { HiOutlineCloudArrowUp, HiOutlineXMark, HiOutlinePlusCircle } from 'react-icons/hi2';
 import { useAuth } from '../../contexts/AuthContext';
+import PhoneInput from '../../components/PhoneInput';
 
 const STEPS = ['Basic Info', 'Financial', 'Details', 'Location', 'Evidence', 'Review'];
 
@@ -33,6 +34,35 @@ const CreatePostPage: React.FC = () => {
     consentConfirmed: false, guardianConsent: false, evidenceSummary: '',
   });
   const [fundRows, setFundRows] = useState<FundBreakdownRow[]>([{ label: '', amount: '' }]);
+  const draftKey = user?._id ? `helpfundme_campaign_draft_${user._id}` : '';
+  const draftNoticeShown = useRef(false);
+
+  useEffect(() => {
+    if (!draftKey) return;
+    const saved = localStorage.getItem(draftKey);
+    if (!saved) return;
+    try {
+      const draft = JSON.parse(saved);
+      if (draft.formData) setFormData((current) => ({ ...current, ...draft.formData }));
+      if (Array.isArray(draft.fundRows)) setFundRows(draft.fundRows);
+      if (Number.isInteger(draft.step)) setStep(Math.max(0, Math.min(STEPS.length - 1, draft.step)));
+      toast.success('Your interrupted campaign draft was restored. Please reselect files before submitting.');
+      draftNoticeShown.current = true;
+    } catch { localStorage.removeItem(draftKey); }
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (!draftKey) return;
+    const timer = window.setTimeout(() => {
+      localStorage.setItem(draftKey, JSON.stringify({ formData, fundRows, step, savedAt: new Date().toISOString() }));
+      window.dispatchEvent(new Event('helpfundme-draft-updated'));
+      if (!draftNoticeShown.current && (formData.title || formData.description)) {
+        toast.success('Progress saved to Drafts in My Posts');
+        draftNoticeShown.current = true;
+      }
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [draftKey, formData, fundRows, step]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
@@ -95,6 +125,7 @@ const CreatePostPage: React.FC = () => {
       identityFiles.forEach((file) => fd.append('identityDocuments', file));
 
       await api.post('/posts', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (draftKey) localStorage.removeItem(draftKey);
       toast.success('Post submitted for review!');
       navigate('/my-posts');
     } catch (error: any) {
@@ -254,7 +285,7 @@ const CreatePostPage: React.FC = () => {
                 </div>
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                   <label className="form-label">Beneficiary's Phone (optional)</label>
-                  <input className="form-input" value={formData.beneficiary.phone} onChange={(e) => updateBeneficiary('phone', e.target.value)} placeholder="+233..." />
+                  <PhoneInput value={formData.beneficiary.phone} onChange={(phone) => updateBeneficiary('phone', phone)} />
                 </div>
               </div>
             )}
@@ -262,8 +293,8 @@ const CreatePostPage: React.FC = () => {
             <div style={{ height: 1, background: 'var(--border)', margin: '24px 0' }} />
             <h3 style={{ marginBottom: 12 }}>Mandatory applicant verification</h3>
             <div className="form-group"><label className="form-label">Full legal name *</label><input className="form-input" value={formData.legalName} onChange={(e) => update('legalName', e.target.value)} /></div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}><div className="form-group"><label className="form-label">Email *</label><input type="email" className="form-input" value={formData.contactEmail} onChange={(e) => update('contactEmail', e.target.value)} /></div><div className="form-group"><label className="form-label">Phone *</label><input className="form-input" value={formData.contactPhone} onChange={(e) => update('contactPhone', e.target.value)} /></div></div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}><div className="form-group"><label className="form-label">Date of birth *</label><input type="date" className="form-input" value={formData.dateOfBirth} onChange={(e) => update('dateOfBirth', e.target.value)} /></div><div className="form-group"><label className="form-label">ID type *</label><select className="form-input" value={formData.idType} onChange={(e) => update('idType', e.target.value)}><option value="ghana_card">Ghana Card</option><option value="passport">Passport</option><option value="drivers_licence">Driver's licence</option><option value="other">Other lawful ID</option></select></div></div>
+            <div className="form-grid-two"><div className="form-group"><label className="form-label">Email *</label><input type="email" className="form-input" value={formData.contactEmail} onChange={(e) => update('contactEmail', e.target.value)} /></div><div className="form-group"><label className="form-label">Phone *</label><PhoneInput value={formData.contactPhone} onChange={(phone) => update('contactPhone', phone)} /></div></div>
+            <div className="form-grid-two"><div className="form-group"><label className="form-label">Date of birth *</label><input type="date" className="form-input" value={formData.dateOfBirth} onChange={(e) => update('dateOfBirth', e.target.value)} /></div><div className="form-group"><label className="form-label">ID type *</label><select className="form-input" value={formData.idType} onChange={(e) => update('idType', e.target.value)}><option value="ghana_card">Ghana Card</option><option value="passport">Passport</option><option value="drivers_licence">Driver's licence</option><option value="other">Other lawful ID</option></select></div></div>
             <div className="form-group"><label className="form-label">ID number *</label><input className="form-input" value={formData.idNumber} onChange={(e) => update('idNumber', e.target.value)} /></div>
             {!formData.raisingForSelf && <><h4>Beneficiary verification</h4><div className="form-group"><label className="form-label">Beneficiary legal name *</label><input className="form-input" value={formData.beneficiaryVerification.legalName} onChange={(e) => update('beneficiaryVerification', { ...formData.beneficiaryVerification, legalName: e.target.value })} /></div><div className="form-group"><label className="form-label">Beneficiary date of birth *</label><input type="date" className="form-input" value={formData.beneficiaryVerification.dateOfBirth} onChange={(e) => update('beneficiaryVerification', { ...formData.beneficiaryVerification, dateOfBirth: e.target.value })} /></div><div className="form-group"><label className="form-label">Beneficiary ID type *</label><select className="form-input" value={formData.beneficiaryVerification.idType} onChange={(e) => update('beneficiaryVerification', { ...formData.beneficiaryVerification, idType: e.target.value })}><option value="ghana_card">Ghana Card</option><option value="passport">Passport</option><option value="birth_certificate">Birth certificate (minor)</option><option value="student_id">Student ID</option><option value="other">Other lawful ID</option></select></div><div className="form-group"><label className="form-label">Beneficiary ID number *</label><input className="form-input" value={formData.beneficiaryVerification.idNumber} onChange={(e) => update('beneficiaryVerification', { ...formData.beneficiaryVerification, idNumber: e.target.value })} /></div></>}
             <label style={{ display: 'flex', gap: 8, marginBottom: 10 }}><input type="checkbox" checked={formData.consentConfirmed} onChange={(e) => update('consentConfirmed', e.target.checked)} /> I confirm I have lawful authority and informed consent to submit and publish this information. *</label>

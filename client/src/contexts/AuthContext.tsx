@@ -6,7 +6,7 @@ interface AuthContextType {
   user: IUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, acceptedTerms: boolean) => Promise<void>;
+  register: (name: string, email: string, password: string, acceptedTerms: boolean) => Promise<IUser>;
   logout: () => Promise<void>;
   googleLogin: () => void;
   updateUser: (data: Partial<IUser>) => void;
@@ -63,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string, acceptedTerms: boolean) => {
     const { data } = await api.post('/auth/register', { name, email, password, acceptedTerms });
     setUser(data.user);
+    return data.user;
   };
 
   const logout = async () => {

@@ -15,6 +15,7 @@ import {
   downloadUserDocument,
   downloadPostEvidence,
   getCampaignReports,
+  toggleUserAccount,
 } from '../controllers/adminController';
 
 const router = Router();
@@ -30,6 +31,7 @@ router.get('/users', getAllUsers);
 router.get('/users/:id', getUserDetail);
 router.get('/users/:id/documents/:index', downloadUserDocument);
 router.put('/users/:id/verify', verifyUserIdentity);
+router.put('/users/:id/account-status', toggleUserAccount);
 router.get('/donations', getAllDonations);
 router.get('/funds', getPlatformFund);
 router.post('/funds/allocate', allocateFundsValidation, allocateFunds);
