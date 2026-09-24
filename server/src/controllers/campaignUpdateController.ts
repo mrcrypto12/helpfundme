@@ -46,7 +46,7 @@ export const addCampaignUpdate = async (req: AuthRequest, res: Response): Promis
         recipient: donorId,
         type: type === 'thank_you' ? 'thank_you' : 'campaign_update',
         title: type === 'thank_you'
-          ? `💚 ${req.user?.name} thanked you!`
+          ? ` ${req.user?.name} thanked you!`
           : `📢 Update on "${post.title}"`,
         message: content.substring(0, 200),
         relatedPost: post._id,
@@ -118,7 +118,7 @@ export const thankDonors = async (req: AuthRequest, res: Response): Promise<void
       const notifications = donorIds.map((donorId: any) => ({
         recipient: donorId,
         type: 'thank_you' as const,
-        title: `💚 ${req.user?.name} sent you a thank-you!`,
+        title: ` ${req.user?.name} sent you a thank-you!`,
         message: message.substring(0, 200),
         relatedPost: post._id,
         relatedUser: req.user?._id,

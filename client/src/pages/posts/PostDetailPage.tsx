@@ -202,7 +202,7 @@ const PostDetailPage: React.FC = () => {
     try {
       const { data } = await api.post(`/posts/${id}/thank-donors`, { message: thankMessage });
       setUpdates((prev) => [data.update, ...prev]);
-      toast.success(`Thank-you sent to ${data.donorCount} donor(s)! 💚`);
+      toast.success(`Thank-you sent to ${data.donorCount} donor(s)!`);
       setShowThankModal(false);
       setThankMessage('');
     } catch (error: any) {
@@ -243,7 +243,7 @@ const PostDetailPage: React.FC = () => {
     setOfferingHelp(true);
     try {
       await api.post(`/posts/${id}/help-offers`, { type: helpType, message: helpMessage });
-      toast.success('Your offer to help has been sent to the campaign owner! 💚');
+      toast.success('Your offer to help has been sent to the campaign owner!');
       setShowHelpModal(false);
       setHelpMessage('');
     } catch (error: any) {

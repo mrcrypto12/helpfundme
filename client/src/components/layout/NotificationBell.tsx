@@ -103,7 +103,7 @@ const NotificationBell: React.FC = () => {
   const getNotifIcon = (type: string) => {
     if (type === 'identity_issue_reported') return '⚠️';
     switch (type) {
-      case 'donation_received': return '💚';
+      case 'donation_received': return '';
       case 'campaign_milestone': return '';
       case 'campaign_completed': return '🎉';
       case 'campaign_update': return '📢';

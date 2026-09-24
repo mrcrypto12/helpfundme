@@ -33,7 +33,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
   if (!isOpen) return null;
 
-  const shareText = `Help support "${title}"! ${amountRaised > 0 ? `${formatCurrency(amountRaised)} raised of ${formatCurrency(targetAmount)} goal.` : ''} Every little bit helps. 💚`;
+  const shareText = `Help support "${title}"! ${amountRaised > 0 ? `${formatCurrency(amountRaised)} raised of ${formatCurrency(targetAmount)} goal.` : ''} Every little bit helps.`;
 
   const handleCopyLink = async () => {
     try {
