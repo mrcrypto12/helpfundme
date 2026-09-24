@@ -31,6 +31,7 @@
   --bg-card-hover: #1C2333;
   --bg-elevated: #1E2536;
   --bg-input: #131825;
+  --navbar-bg: rgba(17, 22, 34, 0.88);
 
   --text-primary: #F0F2F5;
   --text-secondary: #9CA3B4;
@@ -96,6 +97,7 @@
   --bg-card-hover: #F7FAFC;
   --bg-elevated: #FFFFFF;
   --bg-input: #F3F6F9;
+  --navbar-bg: rgba(255, 255, 255, 0.92);
   --text-primary: #18202D;
   --text-secondary: #4D586A;
   --text-muted: #7A8494;
@@ -402,7 +404,7 @@ h1, h2, h3, h4, h5, h6 {
   left: var(--sidebar-width);
   right: 0;
   height: var(--navbar-height);
-  background: rgba(17, 22, 34, 0.85);
+  background: var(--navbar-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
@@ -411,7 +413,7 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: space-between;
   padding: 0 var(--space-xl);
   z-index: 90;
-  transition: left var(--transition);
+  transition: left var(--transition), background-color var(--transition), border-color var(--transition);
 }
 
 .navbar.collapsed {
