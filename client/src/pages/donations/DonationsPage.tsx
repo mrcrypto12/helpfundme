@@ -176,7 +176,7 @@ const DonationsPage: React.FC = () => {
                       style={{ fontWeight: 500, color: 'var(--text-primary)', cursor: d.post ? 'pointer' : 'default' }}
                       onClick={() => d.post && navigate(`/posts/${typeof d.post === 'string' ? d.post : d.post._id}`)}
                     >
-                      {d.type === 'platform' ? '🌐 Platform Fund' : (typeof d.post === 'object' && d.post?.title) || 'Help Post'}
+                      {d.type === 'platform' ? 'Platform Fund' : (typeof d.post === 'object' && d.post?.title) || 'Help Post'}
                     </td>
                     <td>
                       <span className={`status-badge ${d.type === 'platform' ? 'status-completed' : 'status-approved'}`}>
