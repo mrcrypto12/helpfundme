@@ -29,6 +29,10 @@ const PAYSTACK_BASE_URL = 'https://api.paystack.co';
 // @desc    Start a recurring (weekly/monthly) donation
 // @route   POST /api/recurring-donations/initialize
 export const initializeRecurringDonation = async (req: AuthRequest, res: Response): Promise<void> => {
+  if (process.env.PAYMENT_PROVIDER !== 'paystack') {
+    res.status(501).json({ message: 'Recurring donations are not supported by SeevPlus checkout yet' });
+    return;
+  }
   try {
     const { amount, type, postId, frequency } = req.body;
 
@@ -148,6 +152,10 @@ export const getMyRecurringDonations = async (req: AuthRequest, res: Response): 
 // @desc    Cancel a recurring donation
 // @route   PUT /api/recurring-donations/:id/cancel
 export const cancelRecurringDonation = async (req: AuthRequest, res: Response): Promise<void> => {
+  if (process.env.PAYMENT_PROVIDER !== 'paystack') {
+    res.status(501).json({ message: 'No SeevPlus subscription exists to cancel' });
+    return;
+  }
   try {
     const recurring = await RecurringDonation.findOne({ _id: req.params.id, donor: req.user?._id });
     if (!recurring) {

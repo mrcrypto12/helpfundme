@@ -136,6 +136,7 @@ export interface IDonation {
   currency: string;
   type: 'post' | 'platform';
   paymentRef: string;
+  paymentProvider?: 'seev' | 'paystack';
   paymentStatus: 'pending' | 'success' | 'failed';
   transactionId: string;
   message: string;
@@ -180,6 +181,7 @@ export interface IWithdrawal {
   mobileMoneyInfo?: { provider: string; phone: string; name: string };
   status: 'pending' | 'approved' | 'processing' | 'completed' | 'rejected';
   adminNotes: string;
+  transferReference?: string;
   createdAt: string;
 }
 

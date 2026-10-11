@@ -26,7 +26,7 @@ const DonationsPage: React.FC = () => {
 
   useEffect(() => {
     // Handle payment verification redirect
-    const ref = searchParams.get('reference');
+    const ref = searchParams.get('reference') || searchParams.get('sessionRef') || searchParams.get('session_ref') || searchParams.get('session_id');
     if (ref) {
       verifyPayment(ref);
     }
@@ -44,7 +44,8 @@ const DonationsPage: React.FC = () => {
       // Clean URL
       navigate('/donations', { replace: true });
     } catch {
-      toast.error('Payment verification failed');
+      toast.error('Payment is not confirmed yet. Please check your donations again shortly.');
+      navigate('/donations', { replace: true });
     }
   };
 
@@ -109,6 +110,7 @@ const DonationsPage: React.FC = () => {
           <button className="btn btn-primary" onClick={() => setShowPlatformDonate(true)}> Donate to Platform </button>
         </div>
       </div>
+      {import.meta.env.VITE_PAYMENT_MODE === 'sandbox' && <p className="info-box">Payment sandbox is active. Test donations do not move real money.</p>}
 
       {/* Stats Cards */}
       <div className="stats-grid">

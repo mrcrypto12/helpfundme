@@ -603,6 +603,7 @@ const PostDetailPage: React.FC = () => {
               <button className="modal-close" onClick={() => setShowDonateModal(false)}>✕</button>
             </div>
             <div className="modal-body">
+              {import.meta.env.VITE_PAYMENT_MODE === 'sandbox' && <p className="info-box">Sandbox test only — no real money will move.</p>}
               <p style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                 Donating to: <strong>{post.title}</strong>
               </p>
@@ -638,7 +639,7 @@ const PostDetailPage: React.FC = () => {
                 />
               </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)', cursor: 'pointer', marginBottom: 12 }}>
+              {import.meta.env.VITE_PAYMENT_PROVIDER === 'paystack' && <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)', cursor: 'pointer', marginBottom: 12 }}>
                 <input
                   type="checkbox"
                   checked={makeRecurring}
@@ -646,7 +647,7 @@ const PostDetailPage: React.FC = () => {
                   style={{ accentColor: 'var(--primary)' }}
                 />
                 <HiOutlineCalendarDays /> Make this a recurring donation
-              </label>
+                </label>}
 
               {makeRecurring ? (
                 <div className="form-group">
@@ -681,7 +682,7 @@ const PostDetailPage: React.FC = () => {
                 </>
               )}
             </div>
-            <div className="modal-footer">
+              <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setShowDonateModal(false)}>Cancel</button>
               <button className="btn btn-primary" onClick={handleDonate} disabled={donating || !donationAmount}>
                 {donating ? 'Processing...' : `Donate ${donationAmount ? formatCurrency(parseFloat(donationAmount)) : ''}${makeRecurring ? ` / ${recurringFrequency === 'monthly' ? 'mo' : 'wk'}` : ''}`}

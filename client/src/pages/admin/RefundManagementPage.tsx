@@ -40,7 +40,7 @@ const RefundManagementPage: React.FC = () => {
     <div className="page-container">
       <div className="page-header">
         <h1>Refund Requests</h1>
-        <p>Review donor refund requests. Processing issues the refund via Paystack.</p>
+        <p>Review donor refund requests. SeevPlus refunds require an external support process; do not mark one processed without confirmation.</p>
       </div>
 
       <div className="tabs">
@@ -81,7 +81,7 @@ const RefundManagementPage: React.FC = () => {
                           <button className="btn btn-danger btn-sm" onClick={() => handleUpdate(r._id, 'rejected')}>Reject</button>
                         </>
                       )}
-                      {r.status === 'approved' && (
+                      {r.status === 'approved' && r.donation?.paymentProvider !== 'seev' && (
                         <button className="btn btn-primary btn-sm" onClick={() => handleUpdate(r._id, 'processed')}>Process Refund</button>
                       )}
                     </div>

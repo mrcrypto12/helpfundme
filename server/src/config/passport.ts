@@ -23,7 +23,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   const callbackURL =
     process.env.GOOGLE_CALLBACK_URL ||
     (process.env.NODE_ENV === 'production'
-      ? 'https://helpfundme.onrender.com/api/auth/google/callback'
+      ? `${(process.env.API_URL || process.env.CLIENT_URL || '').replace(/\/$/, '')}/api/auth/google/callback`
       : 'http://localhost:5000/api/auth/google/callback');
 
   passport.use(

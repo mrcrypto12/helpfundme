@@ -132,8 +132,8 @@ app.use('/api', (req, res, next) => {
     return next();
   }
 
-  // Paystack is server-to-server and authenticates with an HMAC signature.
-  if (req.path === '/donations/webhook' || req.path === '/resend/webhook') return next();
+  // Provider webhooks authenticate with their own signatures.
+  if (req.path === '/donations/webhook' || req.path === '/donations/seev-webhook' || req.path === '/resend/webhook') return next();
 
   const origin = req.get('origin');
 
@@ -182,7 +182,7 @@ app.use('/api', (_req, res) => {
 
 // In production the same Render Web Service serves React and the API. Keeping
 // both on one origin makes HTTP-only authentication cookies reliable on mobile.
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'production' && process.env.SERVE_CLIENT !== 'false') {
   const clientDist = path.resolve(__dirname, '../../client/dist');
   const indexHtmlPath = path.join(clientDist, 'index.html');
   if (!fs.existsSync(indexHtmlPath)) {

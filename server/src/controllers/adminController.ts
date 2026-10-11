@@ -9,7 +9,7 @@ import PlatformFund from '../models/PlatformFund';
 import { AuthRequest } from '../middleware/auth';
 import AuditLog from '../models/AuditLog';
 import CampaignReport from '../models/CampaignReport';
-import { secureDocumentUrl } from '../utils/cloudinary';
+import { getPrivateDocument } from '../utils/r2';
 import Notification from '../models/Notification';
 import { isResendEnabled, sendTransactionalEmail } from '../services/resend';
 
@@ -195,17 +195,35 @@ export const getUserDetail = async (req: Request, res: Response): Promise<void> 
 };
 
 export const downloadUserDocument = async (req: Request, res: Response): Promise<void> => {
-  const user = await User.findById(req.params.id);
-  const document = user?.verification?.documentsList?.[Number(req.params.index)];
-  if (!document) { res.status(404).json({ message: 'Document not found' }); return; }
-  res.redirect(secureDocumentUrl(document, req.query.download === '1'));
+  try {
+    const user = await User.findById(req.params.id);
+    const document = user?.verification?.documentsList?.[Number(req.params.index)];
+    if (!document) { res.status(404).json({ message: 'Document not found' }); return; }
+    const file = await getPrivateDocument(document);
+    res.setHeader('Content-Type', file.contentType);
+    res.setHeader('Content-Disposition', `${req.query.download === '1' ? 'attachment' : 'inline'}; filename="${file.name}"`);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.send(file.body);
+  } catch (error) {
+    console.error('Document read error:', error);
+    res.status(502).json({ message: 'Could not retrieve document' });
+  }
 };
 
 export const downloadPostEvidence = async (req: Request, res: Response): Promise<void> => {
-  const post = await Post.findById(req.params.id);
-  const document = post?.evidenceDocuments?.[Number(req.params.index)];
-  if (!document) { res.status(404).json({ message: 'Evidence not found' }); return; }
-  res.redirect(secureDocumentUrl(document, req.query.download === '1'));
+  try {
+    const post = await Post.findById(req.params.id);
+    const document = post?.evidenceDocuments?.[Number(req.params.index)];
+    if (!document) { res.status(404).json({ message: 'Evidence not found' }); return; }
+    const file = await getPrivateDocument(document);
+    res.setHeader('Content-Type', file.contentType);
+    res.setHeader('Content-Disposition', `${req.query.download === '1' ? 'attachment' : 'inline'}; filename="${file.name}"`);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.send(file.body);
+  } catch (error) {
+    console.error('Evidence read error:', error);
+    res.status(502).json({ message: 'Could not retrieve evidence' });
+  }
 };
 
 // @desc    Get all users
@@ -328,6 +346,10 @@ export const getPlatformFund = async (_req: Request, res: Response): Promise<voi
 // @desc    Allocate platform funds to a post
 // @route   POST /api/admin/funds/allocate
 export const allocateFunds = async (req: AuthRequest, res: Response): Promise<void> => {
+  if (process.env.PAYMENT_PROVIDER !== 'paystack' && process.env.SEEV_ENV === 'sandbox') {
+    res.status(409).json({ message: 'Fund allocation is disabled while payment sandbox is active' });
+    return;
+  }
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

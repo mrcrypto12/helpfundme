@@ -27,8 +27,10 @@ const WithdrawalManagementPage: React.FC = () => {
 
   const handleUpdate = async (id: string, status: string) => {
     const adminNotes = status === 'rejected' ? prompt('Reason for rejecting this withdrawal?') || '' : '';
+    const transferReference = status === 'completed' ? prompt('Enter the confirmed external bank or mobile-money transfer reference:')?.trim() : undefined;
+    if (status === 'completed' && !transferReference) return;
     try {
-      await api.put(`/withdrawals/${id}/status`, { status, adminNotes });
+      await api.put(`/withdrawals/${id}/status`, { status, adminNotes, transferReference });
       toast.success(`Withdrawal ${status}`);
       fetchWithdrawals();
     } catch (e: any) {
@@ -41,6 +43,7 @@ const WithdrawalManagementPage: React.FC = () => {
       <div className="page-header">
         <h1>Withdrawal Requests</h1>
         <p>Review and process payout requests from campaign owners</p>
+        {import.meta.env.VITE_PAYMENT_MODE === 'sandbox' && <p className="info-box">Sandbox payments are not real funds. Withdrawals and allocations are disabled.</p>}
       </div>
 
       <div className="tabs">
@@ -82,16 +85,16 @@ const WithdrawalManagementPage: React.FC = () => {
                   <td><span className={`status-badge status-${w.status === 'rejected' ? 'declined' : w.status === 'completed' ? 'completed' : 'pending'}`}>{w.status}</span></td>
                   <td>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      {w.status === 'pending' && (
+                      {import.meta.env.VITE_PAYMENT_MODE !== 'sandbox' && w.status === 'pending' && (
                         <>
                           <button className="btn btn-success btn-sm" onClick={() => handleUpdate(w._id, 'approved')}>Approve</button>
                           <button className="btn btn-danger btn-sm" onClick={() => handleUpdate(w._id, 'rejected')}>Reject</button>
                         </>
                       )}
-                      {w.status === 'approved' && (
+                      {import.meta.env.VITE_PAYMENT_MODE !== 'sandbox' && w.status === 'approved' && (
                         <button className="btn btn-secondary btn-sm" onClick={() => handleUpdate(w._id, 'processing')}>Mark Processing</button>
                       )}
-                      {w.status === 'processing' && (
+                      {import.meta.env.VITE_PAYMENT_MODE !== 'sandbox' && w.status === 'processing' && (
                         <button className="btn btn-success btn-sm" onClick={() => handleUpdate(w._id, 'completed')}>Mark Completed</button>
                       )}
                     </div>

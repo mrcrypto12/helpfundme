@@ -4,8 +4,7 @@ import Post from '../models/Post';
 import PostView from '../models/PostView';
 import Comment from '../models/Comment';
 import { AuthRequest } from '../middleware/auth';
-import { uploadToCloudinary } from '../utils/cloudinary';
-import { uploadSecureDocument } from '../utils/cloudinary';
+import { uploadPublicImage, uploadPrivateDocument } from '../utils/r2';
 import User from '../models/User';
 import CampaignReport from '../models/CampaignReport';
 
@@ -79,7 +78,7 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
     if (groupedFiles.images) {
       for (const file of groupedFiles.images) {
         if (!file.mimetype.startsWith('image/')) continue;
-        const result = await uploadToCloudinary(file.buffer, 'helpfund-gh/posts');
+        const result = await uploadPublicImage(file, 'posts');
         images.push(result.url);
       }
     }
@@ -87,9 +86,9 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
       res.status(400).json({ message: 'At least one campaign image is required' }); return;
     }
     const evidenceDocuments = [];
-    for (const file of evidenceFiles) evidenceDocuments.push(await uploadSecureDocument(file, `helpfund-gh/verification/campaigns/${req.user?._id}`));
+    for (const file of evidenceFiles) evidenceDocuments.push(await uploadPrivateDocument(file, `verification/campaigns/${req.user?._id}`));
     const submittedIdentityDocuments = [];
-    for (const file of identityFiles) submittedIdentityDocuments.push(await uploadSecureDocument(file, `helpfund-gh/verification/users/${req.user?._id}`));
+    for (const file of identityFiles) submittedIdentityDocuments.push(await uploadPrivateDocument(file, `verification/users/${req.user?._id}`));
     if (user && submittedIdentityDocuments.length) {
       user.verification = { ...(user.verification || {}), legalName, dateOfBirth, idType, idNumber, status: 'pending', documentsList: [...existingIdentityDocuments, ...submittedIdentityDocuments], identity: false, documents: false };
       user.phone = contactPhone;
@@ -305,7 +304,7 @@ export const updatePost = async (req: AuthRequest, res: Response): Promise<void>
     if (req.files && Array.isArray(req.files) && req.files.length > 0) {
       const newImages: string[] = [];
       for (const file of req.files) {
-        const result = await uploadToCloudinary(file.buffer, 'helpfund-gh/posts');
+        const result = await uploadPublicImage(file, 'posts');
         newImages.push(result.url);
       }
       updates.images = [...(post.images || []), ...newImages].slice(0, 5);

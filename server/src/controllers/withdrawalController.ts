@@ -7,6 +7,10 @@ import { AuthRequest } from '../middleware/auth';
 // @desc    Request a withdrawal for an approved/completed post's funds
 // @route   POST /api/withdrawals
 export const requestWithdrawal = async (req: AuthRequest, res: Response): Promise<void> => {
+  if (process.env.PAYMENT_PROVIDER !== 'paystack' && process.env.SEEV_ENV === 'sandbox') {
+    res.status(409).json({ message: 'Withdrawals are disabled while payment sandbox is active' });
+    return;
+  }
   try {
     const { postId, amount, method, bankInfo, mobileMoneyInfo } = req.body;
 
@@ -103,8 +107,12 @@ export const getAllWithdrawals = async (req: AuthRequest, res: Response): Promis
 // @desc    Update withdrawal status (admin)
 // @route   PUT /api/withdrawals/:id/status
 export const updateWithdrawalStatus = async (req: AuthRequest, res: Response): Promise<void> => {
+  if (process.env.PAYMENT_PROVIDER !== 'paystack' && process.env.SEEV_ENV === 'sandbox') {
+    res.status(409).json({ message: 'Withdrawal processing is disabled while payment sandbox is active' });
+    return;
+  }
   try {
-    const { status, adminNotes } = req.body;
+    const { status, adminNotes, transferReference } = req.body;
     if (!['pending', 'approved', 'processing', 'completed', 'rejected'].includes(status)) {
       res.status(400).json({ message: 'Invalid status' });
       return;
@@ -116,7 +124,14 @@ export const updateWithdrawalStatus = async (req: AuthRequest, res: Response): P
       return;
     }
 
+    if (status === 'completed' && withdrawal.status !== 'completed' &&
+        (withdrawal.status !== 'processing' || typeof transferReference !== 'string' || transferReference.trim().length < 6)) {
+      res.status(400).json({ message: 'A verified external transfer reference is required before completion' });
+      return;
+    }
+
     withdrawal.status = status;
+    if (status === 'completed') withdrawal.transferReference = transferReference.trim();
     if (adminNotes) withdrawal.adminNotes = adminNotes;
     withdrawal.processedBy = req.user?._id;
     withdrawal.processedAt = new Date();

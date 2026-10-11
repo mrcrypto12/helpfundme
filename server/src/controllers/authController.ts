@@ -4,7 +4,7 @@ import { validationResult } from 'express-validator';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/token';
-import { uploadSecureDocument } from '../utils/cloudinary';
+import { uploadPrivateDocument } from '../utils/r2';
 import { addAudienceContact, isResendEnabled, sendVerificationEmail } from '../services/resend';
 import Notification from '../models/Notification';
 
@@ -14,7 +14,9 @@ const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER
 const baseCookieOptions: CookieOptions = {
   httpOnly: true,
   secure: isProduction,
-  sameSite: isProduction ? 'none' : 'lax',
+  // Frontend and API are different origins but the same registrable site.
+  // Lax avoids third-party cookies while allowing same-site API requests.
+  sameSite: 'lax',
 };
 const accessCookieOptions: CookieOptions = { ...baseCookieOptions, maxAge: 15 * 60 * 1000 };
 const refreshCookieOptions: CookieOptions = {
@@ -321,7 +323,7 @@ export const submitVerification = async (req: AuthRequest, res: Response): Promi
       res.status(400).json({ message: 'At least one identity document is required' }); return;
     }
     const documents = [];
-    for (const file of files) documents.push(await uploadSecureDocument(file, `helpfund-gh/verification/users/${user._id}`));
+    for (const file of files) documents.push(await uploadPrivateDocument(file, `verification/users/${user._id}`));
     user.phone = phone;
     user.verification = {
       ...(user.verification || {}), identity: false, documents: false, status: 'pending',

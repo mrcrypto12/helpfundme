@@ -117,6 +117,10 @@ export const updateRefundStatus = async (req: AuthRequest, res: Response): Promi
     const donation: any = refund.donation;
 
     if (status === 'processed' && refund.status !== 'processed') {
+      if (donation.paymentProvider === 'seev') {
+        res.status(409).json({ message: 'SeevPlus checkout does not provide an API refund. Arrange and verify the refund with SeevPlus support before updating records.' });
+        return;
+      }
       const refundRes = await fetch(`${PAYSTACK_BASE_URL}/refund`, {
         method: 'POST',
         headers: {
