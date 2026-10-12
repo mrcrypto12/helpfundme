@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import { HiCheck, HiOutlineArrowDownTray, HiOutlinePrinter, HiOutlineShare, HiOutlineXMark } from 'react-icons/hi2';
+import { HiCheck, HiOutlinePrinter, HiOutlineShare, HiOutlineXMark } from 'react-icons/hi2';
 import { IReceipt } from '../types';
 import { formatCurrency, formatDateTime } from '../utils/helpers';
 import { createReceiptShareImage } from '../utils/receiptShare';
@@ -92,7 +92,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, receipt, l
         <div className="modal-footer receipt-modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Close</button>
           <button className="btn btn-secondary" onClick={handleShare} disabled={!receipt || loading || sharing}>
-            {navigator.share ? <HiOutlineShare /> : <HiOutlineArrowDownTray />}{sharing ? 'Preparing...' : 'Share image'}
+            <HiOutlineShare />{sharing ? 'Preparing...' : 'Share image'}
           </button>
           <button className="btn btn-primary" onClick={() => window.print()} disabled={!receipt || loading}><HiOutlinePrinter /> Print / Save PDF</button>
         </div>
