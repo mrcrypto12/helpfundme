@@ -110,7 +110,7 @@ const DonationsPage: React.FC = () => {
           <button className="btn btn-primary" onClick={() => setShowPlatformDonate(true)}> Donate to Platform </button>
         </div>
       </div>
-      {import.meta.env.VITE_PAYMENT_MODE === 'sandbox' && <p className="info-box">Payment sandbox is active. Test donations do not move real money.</p>}
+      {import.meta.env.VITE_PAYMENT_MODE === 'sandbox' && <p className="info-box">Summary of donations made.</p>}
 
       {/* Stats Cards */}
       <div className="stats-grid">
