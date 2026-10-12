@@ -42,15 +42,6 @@
   --border-light: #2A3349;
   --border-focus: var(--primary);
 
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #1B8A2A 0%, #2EAD3E 50%, #1B8A2A 100%);
-  --gradient-gold: linear-gradient(135deg, #D4A843 0%, #F0C850 50%, #D4A843 100%);
-  --gradient-green: linear-gradient(135deg, #1B8A2A 0%, #2EAD3E 100%);
-  --gradient-red: linear-gradient(135deg, #C62828 0%, #E53935 100%);
-  --gradient-card: linear-gradient(135deg, rgba(22, 27, 39, 0.9) 0%, rgba(30, 37, 54, 0.9) 100%);
-  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
-  --gradient-hero: linear-gradient(135deg, #0B0E14 0%, #111622 40%, #161B27 100%);
-
   /* Shadows */
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
@@ -103,9 +94,6 @@
   --text-muted: #7A8494;
   --border: #DCE2EA;
   --border-light: #CDD5E0;
-  --gradient-card: linear-gradient(135deg, #FFFFFF 0%, #F7FAFC 100%);
-  --gradient-glass: linear-gradient(135deg, rgba(0,0,0,.02), rgba(0,0,0,.01));
-  --gradient-hero: linear-gradient(135deg, #F5F7FA 0%, #EDF1F6 45%, #FFFFFF 100%);
   --shadow-sm: 0 2px 8px rgba(23, 32, 45, .08);
   --shadow-md: 0 4px 16px rgba(23, 32, 45, .10);
   --shadow-lg: 0 8px 32px rgba(23, 32, 45, .14);
@@ -258,7 +246,7 @@ h1, h2, h3, h4, h5, h6 {
 .sidebar-logo .logo-icon {
   width: 36px;
   height: 36px;
-  background: var(--gradient-primary);
+  background: var(--primary);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -508,7 +496,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: var(--gradient-primary);
+  background: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -606,7 +594,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-  background: var(--gradient-primary);
+  background: var(--primary);
   color: #fff;
   box-shadow: var(--shadow-primary);
 }
@@ -622,12 +610,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-success {
-  background: var(--gradient-green);
+  background: var(--primary);
   color: white;
 }
 
 .btn-danger {
-  background: var(--gradient-red);
+  background: var(--red);
   color: white;
 }
 
@@ -652,7 +640,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-gold {
-  background: var(--gradient-gold);
+  background: var(--gold);
   color: #000;
   box-shadow: var(--shadow-gold);
 }
@@ -707,7 +695,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .card-glass {
-  background: var(--gradient-glass);
+  background: var(--bg-card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255,255,255,0.06);
@@ -743,7 +731,7 @@ h1, h2, h3, h4, h5, h6 {
 .sensitive-image {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--bg-elevated), var(--bg-secondary));
+  background: var(--bg-elevated);
 }
 
 .sensitive-image > img {
@@ -905,25 +893,14 @@ h1, h2, h3, h4, h5, h6 {
 
 .progress-bar-fill {
   height: 100%;
-  background: var(--gradient-primary);
+  background: var(--primary);
   border-radius: var(--radius-full);
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
-.progress-bar-fill::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 30px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
-  animation: shimmer 1.5s ease infinite;
-}
-
 .progress-bar-fill.completed {
-  background: var(--gradient-gold);
+  background: var(--gold);
 }
 
 /* Gap display */
@@ -965,7 +942,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .post-card-donate-btn {
   padding: 6px 16px;
-  background: var(--gradient-primary);
+  background: var(--primary);
   color: #fff;
   border-radius: var(--radius-full);
   font-size: 0.78rem;
@@ -1062,31 +1039,9 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gradient-hero);
+  background: var(--bg-primary);
   position: relative;
   overflow: hidden;
-}
-
-.auth-page::before {
-  content: '';
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(27, 138, 42, 0.1) 0%, transparent 70%);
-  top: -200px;
-  right: -200px;
-  pointer-events: none;
-}
-
-.auth-page::after {
-  content: '';
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(212, 168, 67, 0.06) 0%, transparent 70%);
-  bottom: -200px;
-  left: -200px;
-  pointer-events: none;
 }
 
 .auth-container {
@@ -1113,7 +1068,7 @@ h1, h2, h3, h4, h5, h6 {
 .auth-logo {
   width: 56px;
   height: 56px;
-  background: var(--gradient-primary);
+  background: var(--primary);
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
@@ -1548,7 +1503,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--gradient-primary);
+  background: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1790,9 +1745,8 @@ h1, h2, h3, h4, h5, h6 {
    ======================================== */
 
 .skeleton {
-  background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-card-hover) 50%, var(--bg-elevated) 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s ease infinite;
+  background: var(--bg-elevated);
+  animation: pulse-badge 1.5s ease-in-out infinite;
   border-radius: var(--radius-sm);
 }
 
@@ -1962,7 +1916,7 @@ h1, h2, h3, h4, h5, h6 {
    ======================================== */
 
 .toast-custom {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--bg-elevated) 94%, var(--primary) 6%), var(--bg-card)) !important;
+  background: var(--bg-elevated) !important;
   color: var(--text-primary) !important;
   border: 1px solid color-mix(in srgb, var(--border) 72%, var(--primary) 28%) !important;
   font-family: var(--font-body) !important;
@@ -2120,16 +2074,6 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(300%); }
-}
-
-@keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
 }
 
 @keyframes pulse-badge {

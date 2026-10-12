@@ -52,7 +52,7 @@ const MapView: React.FC = () => {
                   padding: '20px',
                   cursor: 'pointer',
                   borderColor: intensity > 0.6 ? 'var(--primary)' : 'var(--border)',
-                  background: `linear-gradient(135deg, rgba(27,138,42,${0.04 + intensity * 0.12}) 0%, var(--bg-card) 100%)`,
+                  background: `color-mix(in srgb, var(--primary) ${Math.round(4 + intensity * 12)}%, var(--bg-card))`,
                 }}
                 onClick={() => navigate(`/dashboard?region=${encodeURIComponent(s.region)}`)}
               >

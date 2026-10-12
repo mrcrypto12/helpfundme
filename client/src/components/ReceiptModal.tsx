@@ -30,7 +30,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, receipt, l
               <div style={{ textAlign: 'center', marginBottom: 24 }}>
                 <div
                   style={{
-                    width: 48, height: 48, background: 'var(--gradient-primary)',
+                    width: 48, height: 48, background: 'var(--primary)',
                     borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center',
                     justifyContent: 'center', fontWeight: 800, color: '#fff',
                     margin: '0 auto 8px', fontSize: '1.2rem',
