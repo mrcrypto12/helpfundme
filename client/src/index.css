@@ -2171,6 +2171,7 @@ h1, h2, h3, h4, h5, h6 {
   
   .post-detail-sidebar {
     position: static;
+    order: -1;
   }
 
   .posts-grid {

@@ -7,9 +7,10 @@ const escape = (value: unknown) => String(value ?? '')
   .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
   .replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-const htmlHeaders = () => ({
+const htmlHeaders = (hasPostMetadata: boolean) => ({
   'Content-Type': 'text/html; charset=utf-8',
-  'Cache-Control': 'public, max-age=300',
+  // Do not let a temporary API outage become a cached generic social preview.
+  'Cache-Control': hasPostMetadata ? 'public, max-age=300' : 'no-store',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'X-Frame-Options': 'DENY',
@@ -26,13 +27,13 @@ export const onRequest = async ({ request, env, params }: {
   if (!htmlResponse.ok) return htmlResponse;
   let html = await htmlResponse.text();
   const id = params.id;
-  if (!/^[0-9a-f-]{36}$/i.test(id) || !env.API_ORIGIN) return new Response(html, { headers: htmlHeaders() });
+  if (!/^[0-9a-f-]{36}$/i.test(id) || !env.API_ORIGIN) return new Response(html, { headers: htmlHeaders(false) });
 
   try {
     const apiOrigin = new URL(env.API_ORIGIN);
     if (apiOrigin.protocol !== 'https:') throw new Error('API origin must use HTTPS');
     const result = await fetch(`${apiOrigin.origin}/api/posts/${encodeURIComponent(id)}`);
-    if (!result.ok) return new Response(html, { headers: htmlHeaders() });
+    if (!result.ok) return new Response(html, { headers: htmlHeaders(false) });
     const { post } = await result.json() as { post?: { title: string; description: string; images?: string[] } };
     if (post) {
       const title = escape(post.title);
@@ -50,9 +51,10 @@ export const onRequest = async ({ request, env, params }: {
 <meta name="twitter:description" content="${description}" />
 <meta name="twitter:image" content="${image}" />
 <link rel="canonical" href="${url}" /></head>`);
+      return new Response(html, { headers: htmlHeaders(true) });
     }
   } catch {
     // A sleeping free API must not prevent the frontend route from rendering.
   }
-  return new Response(html, { headers: htmlHeaders() });
+  return new Response(html, { headers: htmlHeaders(false) });
 };
