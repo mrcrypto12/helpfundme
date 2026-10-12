@@ -85,36 +85,20 @@ const ProfilePage: React.FC = () => {
       </div>
 
       {badges.length > 0 && (
-        <section className="card achievement-section" aria-labelledby="achievement-heading">
-          <div className="achievement-heading">
-            <div>
-              <span className="achievement-eyebrow">Your impact</span>
-              <h3 id="achievement-heading">Badges earned</h3>
-            </div>
-            <span className="achievement-count">{badges.filter((badge) => BADGE_META[badge]).length} earned</span>
-          </div>
-          <div className="achievement-grid">
+        <div className="achievement-badges" role="group" aria-label="Badges earned">
             {badges.map((b) => {
               const meta = BADGE_META[b];
               if (!meta) return null;
               const Icon = badgeIcons[meta.icon as keyof typeof badgeIcons];
               if (!Icon) return null;
               return (
-                <article key={b} className={`achievement-card achievement-${meta.id}`} aria-label={`${meta.label}: ${meta.description}`}>
-                  <div className="achievement-medallion" aria-hidden="true">
-                    <Icon className="achievement-icon" />
-                    <span className="achievement-medallion-dot" />
-                  </div>
-                  <div className="achievement-copy">
-                    <span className="achievement-milestone">{meta.milestone}</span>
-                    <h4>{meta.label}</h4>
-                    <p>{meta.description}</p>
-                  </div>
-                </article>
+                <span key={b} className={`achievement-badge achievement-${meta.id}`} role="img" aria-label={`${meta.label}: ${meta.description}`} title={`${meta.label} — ${meta.description}`}>
+                  <Icon className="achievement-icon" aria-hidden="true" />
+                  <span className="achievement-medallion-dot" aria-hidden="true" />
+                </span>
               );
             })}
-          </div>
-        </section>
+        </div>
       )}
 
       <div className="card" style={{ padding: '24px', marginBottom: 20 }}>
