@@ -85,7 +85,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, receipt, l
                 </div>
                 <p className="receipt-note">This confirms a successful donation processed through HelpFundMe. It is not a tax-deductibility certificate.</p>
               </div>
-              <footer className="receipt-sheet-footer"><strong>HelpFundMe</strong><span>By Forgex Company Limited · Thank you for helping someone today.</span></footer>
+              <footer className="receipt-sheet-footer"><strong>HelpFundMe</strong><span>By Forgetech Limited · Thank you for helping someone today.</span></footer>
             </article>
           )}
         </div>

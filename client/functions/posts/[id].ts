@@ -37,7 +37,7 @@ export const onRequest = async ({ request, env, params }: {
     const { post } = await result.json() as { post?: { title: string; description: string; images?: string[] } };
     if (post) {
       const title = escape(post.title);
-      const description = escape(`${String(post.description || '').replace(/\s+/g, ' ').slice(0, 150)} · HelpFundMe by Forgex Company Limited`);
+      const description = escape(`${String(post.description || '').replace(/\s+/g, ' ').slice(0, 150)} · HelpFundMe by Forgetech Limited`);
       const image = escape(post.images?.[0] || `${origin}/logos.png`);
       const url = escape(`${origin}/posts/${id}`);
       html = html.replace('</head>', `<meta property="og:type" content="article" />

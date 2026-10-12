@@ -5,6 +5,14 @@ import { getInitials } from '../../utils/helpers';
 import { BADGE_META } from '../../utils/badges';
 import toast from 'react-hot-toast';
 import PhoneInput from '../../components/PhoneInput';
+import { HiHeart, HiUserGroup, HiStar, HiRocketLaunch } from 'react-icons/hi2';
+
+const badgeIcons = {
+  heart: HiHeart,
+  community: HiUserGroup,
+  star: HiStar,
+  rocket: HiRocketLaunch,
+};
 
 const ProfilePage: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -77,29 +85,36 @@ const ProfilePage: React.FC = () => {
       </div>
 
       {badges.length > 0 && (
-        <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-          <h3 style={{ marginBottom: 12, fontSize: '0.95rem' }}>Badges Earned</h3>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <section className="card achievement-section" aria-labelledby="achievement-heading">
+          <div className="achievement-heading">
+            <div>
+              <span className="achievement-eyebrow">Your impact</span>
+              <h3 id="achievement-heading">Badges earned</h3>
+            </div>
+            <span className="achievement-count">{badges.filter((badge) => BADGE_META[badge]).length} earned</span>
+          </div>
+          <div className="achievement-grid">
             {badges.map((b) => {
               const meta = BADGE_META[b];
               if (!meta) return null;
+              const Icon = badgeIcons[meta.icon as keyof typeof badgeIcons];
+              if (!Icon) return null;
               return (
-                <div
-                  key={b}
-                  title={meta.description}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                    padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border)', minWidth: 90,
-                  }}
-                >
-                  <span style={{ fontSize: '1.5rem' }}>{meta.icon}</span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textAlign: 'center' }}>{meta.label}</span>
-                </div>
+                <article key={b} className={`achievement-card achievement-${meta.id}`} aria-label={`${meta.label}: ${meta.description}`}>
+                  <div className="achievement-medallion" aria-hidden="true">
+                    <Icon className="achievement-icon" />
+                    <span className="achievement-medallion-dot" />
+                  </div>
+                  <div className="achievement-copy">
+                    <span className="achievement-milestone">{meta.milestone}</span>
+                    <h4>{meta.label}</h4>
+                    <p>{meta.description}</p>
+                  </div>
+                </article>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
       <div className="card" style={{ padding: '24px', marginBottom: 20 }}>
