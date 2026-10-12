@@ -36,50 +36,70 @@ const CreatePostPage: React.FC = () => {
   const [fundRows, setFundRows] = useState<FundBreakdownRow[]>([{ label: '', amount: '' }]);
   const draftKey = user?._id ? `helpfundme_campaign_draft_${user._id}` : '';
   const draftNoticeShown = useRef(false);
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftStarted, setDraftStarted] = useState(false);
 
   useEffect(() => {
     if (!draftKey) return;
     const saved = localStorage.getItem(draftKey);
-    if (!saved) return;
-    try {
-      const draft = JSON.parse(saved);
-      if (draft.formData) setFormData((current) => ({ ...current, ...draft.formData }));
-      if (Array.isArray(draft.fundRows)) setFundRows(draft.fundRows);
-      if (Number.isInteger(draft.step)) setStep(Math.max(0, Math.min(STEPS.length - 1, draft.step)));
-      toast.success('Draft restored');
-      draftNoticeShown.current = true;
-    } catch { localStorage.removeItem(draftKey); }
+    if (saved) {
+      try {
+        const draft = JSON.parse(saved);
+        const hasInput = draft.started === true || Boolean(
+          draft.formData?.title?.trim() || draft.formData?.description?.trim() ||
+          draft.formData?.purpose?.trim() || draft.formData?.targetAmount?.trim() ||
+          draft.formData?.evidenceSummary?.trim() || draft.formData?.location?.city?.trim() ||
+          draft.fundRows?.some?.((row: FundBreakdownRow) => row.label?.trim() || row.amount?.trim())
+        );
+        if (hasInput) {
+          if (draft.formData) setFormData((current) => ({ ...current, ...draft.formData }));
+          if (Array.isArray(draft.fundRows)) setFundRows(draft.fundRows);
+          if (Number.isInteger(draft.step)) setStep(Math.max(0, Math.min(STEPS.length - 1, draft.step)));
+          setDraftStarted(true);
+          toast.success('Draft restored');
+          draftNoticeShown.current = true;
+        } else {
+          localStorage.removeItem(draftKey);
+          window.dispatchEvent(new Event('helpfundme-draft-updated'));
+        }
+      } catch { localStorage.removeItem(draftKey); }
+    }
+    setDraftReady(true);
   }, [draftKey]);
 
   useEffect(() => {
-    if (!draftKey) return;
+    if (!draftKey || !draftReady || !draftStarted) return;
     const timer = window.setTimeout(() => {
-      localStorage.setItem(draftKey, JSON.stringify({ formData, fundRows, step, savedAt: new Date().toISOString() }));
+      localStorage.setItem(draftKey, JSON.stringify({ formData, fundRows, step, started: true, savedAt: new Date().toISOString() }));
       window.dispatchEvent(new Event('helpfundme-draft-updated'));
-      if (!draftNoticeShown.current && (formData.title || formData.description)) {
+      if (!draftNoticeShown.current) {
         toast.success('saved to drafts');
         draftNoticeShown.current = true;
       }
     }, 700);
     return () => window.clearTimeout(timer);
-  }, [draftKey, formData, fundRows, step]);
+  }, [draftKey, draftReady, draftStarted, formData, fundRows, step]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
     maxFiles: 5,
     maxSize: 5 * 1024 * 1024,
-    onDrop: (accepted: File[]) => setImages((prev) => [...prev, ...accepted].slice(0, 5)),
+    onDrop: (accepted: File[]) => {
+      if (accepted.length) setDraftStarted(true);
+      setImages((prev) => [...prev, ...accepted].slice(0, 5));
+    },
     onDropRejected: () => toast.error('Invalid file. Max 5 images, 5MB each.'),
   });
 
   const removeImage = (index: number) => setImages((prev) => prev.filter((_, i) => i !== index));
 
-  const update = (field: string, value: any) => setFormData((prev) => ({ ...prev, [field]: value }));
-  const updateSurgery = (field: string, value: any) => setFormData((prev) => ({ ...prev, surgeryDetails: { ...prev.surgeryDetails, [field]: value } }));
-  const updateLocation = (field: string, value: any) => setFormData((prev) => ({ ...prev, location: { ...prev.location, [field]: value } }));
-  const updateBeneficiary = (field: string, value: any) => setFormData((prev) => ({ ...prev, beneficiary: { ...prev.beneficiary, [field]: value } }));
+  const update = (field: string, value: any) => { setDraftStarted(true); setFormData((prev) => ({ ...prev, [field]: value })); };
+  const updateSurgery = (field: string, value: any) => { setDraftStarted(true); setFormData((prev) => ({ ...prev, surgeryDetails: { ...prev.surgeryDetails, [field]: value } })); };
+  const updateLocation = (field: string, value: any) => { setDraftStarted(true); setFormData((prev) => ({ ...prev, location: { ...prev.location, [field]: value } })); };
+  const updateBeneficiary = (field: string, value: any) => { setDraftStarted(true); setFormData((prev) => ({ ...prev, beneficiary: { ...prev.beneficiary, [field]: value } })); };
 
   const updateFundRow = (i: number, field: keyof FundBreakdownRow, value: string) => {
+    setDraftStarted(true);
     setFundRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)));
   };
   const addFundRow = () => setFundRows((prev) => [...prev, { label: '', amount: '' }]);
@@ -361,8 +381,8 @@ const CreatePostPage: React.FC = () => {
           <>
             <div className="card" style={{ padding: 16, marginBottom: 16 }}><strong>Required category evidence</strong><p style={{ marginTop: 6, color: 'var(--text-secondary)' }}>{formData.category === 'medical' ? 'Hospital bill/invoice, treatment evidence, hospital confirmation where appropriate, and patient/representative consent.' : formData.category === 'education' ? 'School invoice/fee statement, student number, results where relevant, relationship/authority, and student ID where available.' : formData.category === 'emergency' ? 'Photos, location, damage and cost evidence, plus an authority, organization, or witness report where available.' : 'A project plan, budget, authorization, registration details where applicable, and a transparent use-of-funds explanation.'}</p></div>
             <div className="form-group"><label className="form-label">Evidence summary *</label><textarea className="form-input form-textarea" value={formData.evidenceSummary} onChange={(e) => update('evidenceSummary', e.target.value)} placeholder="List each document and how it supports the claim." /></div>
-            <div className="form-group"><label className="form-label">Supporting evidence * (PDF/JPG/PNG)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => setEvidenceFiles(Array.from(e.target.files || []))} /></div>
-            {!(user?.verification?.documentsList?.length) && <div className="form-group"><label className="form-label">Applicant identity document * (your profile has none)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => setIdentityFiles(Array.from(e.target.files || []))} /></div>}
+            <div className="form-group"><label className="form-label">Supporting evidence * (PDF/JPG/PNG)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length) setDraftStarted(true); setEvidenceFiles(files); }} /></div>
+            {!(user?.verification?.documentsList?.length) && <div className="form-group"><label className="form-label">Applicant identity document * (your profile has none)</label><input type="file" multiple accept=".pdf,image/jpeg,image/png,image/webp" onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length) setDraftStarted(true); setIdentityFiles(files); }} /></div>}
             <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Campaign images were added in Basic Info. Files here are private verification evidence and are only available to authorized reviewers.</p>
           </>
         )}

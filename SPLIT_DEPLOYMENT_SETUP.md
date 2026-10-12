@@ -54,9 +54,9 @@ Create a Neon project in a region close to the Render service. Neon Console → 
 Create **two** buckets: `helpfundme-media` and `helpfundme-documents` (names can differ if env values match). Bind `media.helpfundme.forgetechgh.com` as a **custom domain only to the media bucket**. Keep the documents bucket private: no custom domain and no `r2.dev` public development URL. Create an R2 S3 API token scoped to those two buckets with Object Read & Write. Copy its Access Key ID, Secret Access Key, and your Cloudflare Account ID into Render:
 
 ```text
-R2_ACCOUNT_ID=<account ID>
-R2_ACCESS_KEY_ID=<S3 access key ID>
-R2_SECRET_ACCESS_KEY=<S3 secret access key>
+R2_ACCOUNT_ID=da9539dd12ddd05a52b08ee197633e9f
+R2_ACCESS_KEY_ID=9cc28c8f6c8def11082d292af1bc1b14
+R2_SECRET_ACCESS_KEY=92bf6ee04703ffa6affbdce4d719e886d8856f75953f58708fbd3d41bc3a84eb
 R2_PUBLIC_BUCKET=helpfundme-media
 R2_PRIVATE_BUCKET=helpfundme-documents
 R2_PUBLIC_BASE_URL=https://media.helpfundme.forgetechgh.com

@@ -29,8 +29,18 @@ const MyPostsPage: React.FC = () => {
   useEffect(() => {
     fetchMyPosts();
     const loadDraft = () => {
-      const raw = user?._id ? localStorage.getItem(`helpfundme_campaign_draft_${user._id}`) : null;
-      try { setDraft(raw ? JSON.parse(raw) : null); } catch { setDraft(null); }
+      const key = user?._id ? `helpfundme_campaign_draft_${user._id}` : '';
+      const raw = key ? localStorage.getItem(key) : null;
+      try {
+        const saved = raw ? JSON.parse(raw) : null;
+        const hasInput = saved && (saved.started === true ||
+          saved.formData?.title?.trim() || saved.formData?.description?.trim() ||
+          saved.formData?.purpose?.trim() || saved.formData?.targetAmount?.trim() ||
+          saved.formData?.evidenceSummary?.trim() || saved.formData?.location?.city?.trim() ||
+          saved.fundRows?.some?.((row: { label?: string; amount?: string }) => row.label?.trim() || row.amount?.trim()));
+        if (saved && !hasInput) localStorage.removeItem(key);
+        setDraft(hasInput ? saved : null);
+      } catch { setDraft(null); }
     };
     loadDraft(); window.addEventListener('helpfundme-draft-updated', loadDraft);
     return () => window.removeEventListener('helpfundme-draft-updated', loadDraft);
@@ -113,7 +123,7 @@ const MyPostsPage: React.FC = () => {
         </div>
       </div>
 
-      {draft && <div className="card" style={{ padding: 20, marginBottom: 20, borderColor: 'var(--gold)' }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}><div><span className="status-badge status-pending">Draft</span><h3 style={{ marginTop: 8 }}>{draft.formData?.title || 'Untitled campaign'}</h3><p style={{ color: 'var(--text-muted)' }}>Saved {draft.savedAt ? new Date(draft.savedAt).toLocaleString() : 'recently'}. Uploaded files must be selected again.</p></div><div style={{ display: 'flex', gap: 8 }}><button className="btn btn-primary" onClick={() => navigate('/posts/create')}>Continue</button><button className="btn btn-danger" onClick={deleteDraft}>Delete permanently</button></div></div></div>}
+      {draft && <div className="card" style={{ padding: 20, marginBottom: 20, borderColor: 'var(--gold)' }}><div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}><div><span className="status-badge status-pending">Draft</span><h3 style={{ marginTop: 8 }}>{draft.formData?.title || 'Untitled campaign'}</h3><p style={{ color: 'var(--text-muted)' }}>Saved {draft.savedAt ? new Date(draft.savedAt).toLocaleString() : 'recently'}. Uploaded files must be selected again.</p></div><div style={{ display: 'flex', gap: 8 }}><button className="btn btn-primary" onClick={() => navigate('/posts/create')}>Continue</button><button className="btn btn-white" onClick={deleteDraft}>Delete permanently</button></div></div></div>}
 
       {posts.length === 0 && !draft ? (
         <div className="empty-state">

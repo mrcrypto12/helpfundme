@@ -631,6 +631,16 @@ h1, h2, h3, h4, h5, h6 {
   color: white;
 }
 
+.btn-white {
+  background: #fff;
+  color: #18202D;
+  border: 1px solid #DCE2EA;
+}
+
+.btn-white:hover {
+  background: #F2F4F7;
+}
+
 .btn-outline {
   background: transparent;
   color: var(--primary-light);
