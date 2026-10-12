@@ -1,7 +1,9 @@
-import React from 'react';
-import { formatCurrency, formatDateTime } from '../utils/helpers';
+import React, { useState } from 'react';
+import toast from 'react-hot-toast';
+import { HiCheck, HiOutlineArrowDownTray, HiOutlinePrinter, HiOutlineShare, HiOutlineXMark } from 'react-icons/hi2';
 import { IReceipt } from '../types';
-import { HiOutlineXMark, HiOutlinePrinter } from 'react-icons/hi2';
+import { formatCurrency, formatDateTime } from '../utils/helpers';
+import { createReceiptShareImage } from '../utils/receiptShare';
 
 interface ReceiptModalProps {
   isOpen: boolean;
@@ -11,64 +13,88 @@ interface ReceiptModalProps {
 }
 
 const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, receipt, loading }) => {
+  const [sharing, setSharing] = useState(false);
   if (!isOpen) return null;
 
-  const handlePrint = () => window.print();
+  const handleShare = async () => {
+    if (!receipt || sharing) return;
+    setSharing(true);
+    try {
+      const image = await createReceiptShareImage(receipt);
+      const file = new File([image], 'helpfundme-donation.png', { type: 'image/png' });
+      const shareData: ShareData = {
+        files: [file],
+        title: 'I supported a HelpFundMe campaign',
+        text: `I supported ${receipt.campaignTitle} on HelpFundMe.`,
+      };
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        const url = URL.createObjectURL(image);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        toast.success('Share image downloaded. Attach it to a post or message.');
+      }
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        toast.error('Could not prepare the share image. Please try again.');
+      }
+    } finally {
+      setSharing(false);
+    }
+  };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
-        <div className="modal-header">
-          <h2>Donation Receipt</h2>
-          <button className="modal-close" onClick={onClose}><HiOutlineXMark /></button>
+    <div className="modal-overlay receipt-modal-overlay" onClick={onClose}>
+      <div className="modal receipt-modal" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Donation receipt">
+        <div className="modal-header receipt-modal-header">
+          <h2>Donation receipt</h2>
+          <button className="modal-close" onClick={onClose} aria-label="Close receipt"><HiOutlineXMark /></button>
         </div>
-        <div className="modal-body">
+        <div className="receipt-modal-body">
           {loading || !receipt ? (
             <div className="loader-container"><div className="loader" /></div>
           ) : (
-            <div id="receipt-content">
-              <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                <div
-                  style={{
-                    width: 48, height: 48, background: 'var(--primary)',
-                    borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', fontWeight: 800, color: '#fff',
-                    margin: '0 auto 8px', fontSize: '1.2rem',
-                  }}
-                >
-                  H
+            <article className="receipt-sheet" id="receipt-content">
+              <header className="receipt-brand">
+                <div className="receipt-brand-name"><img src="/logos.png" alt="" /><span>{receipt.platformName}</span></div>
+                <span className="receipt-brand-label">Donation receipt</span>
+              </header>
+              <div className="receipt-sheet-body">
+                <div className="receipt-success-icon" aria-hidden="true"><HiCheck /></div>
+                <p className="receipt-eyebrow">Payment confirmed</p>
+                <h3>Thank you for making a difference.</h3>
+                <p className="receipt-intro">Your support helps this cause move forward. Keep this receipt for your records.</p>
+                <div className="receipt-total-card">
+                  <span>Donation amount</span><strong>{formatCurrency(receipt.amount)}</strong><small>{receipt.currency} · Paid</small>
                 </div>
-                <div style={{ fontWeight: 700, fontFamily: 'var(--font-heading)' }}>{receipt.platformName}</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Official Donation Receipt</div>
-              </div>
-
-              <div className="info-box">
-                <div className="info-box-row"><span className="info-box-label">Receipt No.</span><span className="info-box-value">{receipt.receiptNumber}</span></div>
-                <div className="info-box-row"><span className="info-box-label">Date</span><span className="info-box-value">{formatDateTime(receipt.date)}</span></div>
-                <div className="info-box-row"><span className="info-box-label">Donor</span><span className="info-box-value">{receipt.donorName}</span></div>
-                {receipt.donorEmail && (
-                  <div className="info-box-row"><span className="info-box-label">Email</span><span className="info-box-value">{receipt.donorEmail}</span></div>
-                )}
-                <div className="info-box-row"><span className="info-box-label">Campaign</span><span className="info-box-value">{receipt.campaignTitle}</span></div>
-                <div className="info-box-row"><span className="info-box-label">Type</span><span className="info-box-value">{receipt.type === 'platform' ? 'Platform Fund' : 'Direct Donation'}</span></div>
-                <div className="info-box-row"><span className="info-box-label">Transaction Ref</span><span className="info-box-value">{receipt.paymentRef}</span></div>
-                <div className="info-box-row">
-                  <span className="info-box-label">Amount</span>
-                  <span className="info-box-value" style={{ color: 'var(--gold)', fontSize: '1.1rem' }}>{formatCurrency(receipt.amount)}</span>
+                <div className="receipt-details">
+                  <div className="receipt-details-heading"><span>Donation details</span><span>{receipt.receiptNumber}</span></div>
+                  <div className="receipt-detail-row"><span>Supporting</span><strong>{receipt.campaignTitle}</strong></div>
+                  <div className="receipt-detail-row"><span>Donation type</span><strong>{receipt.type === 'platform' ? 'Platform fund' : 'Campaign donation'}</strong></div>
+                  <div className="receipt-detail-row"><span>Donor</span><strong>{receipt.donorName}</strong></div>
+                  {receipt.donorEmail && <div className="receipt-detail-row"><span>Email</span><strong>{receipt.donorEmail}</strong></div>}
+                  <div className="receipt-detail-row"><span>Recorded on</span><strong>{formatDateTime(receipt.date)}</strong></div>
+                  <div className="receipt-detail-row receipt-reference"><span>Payment reference</span><strong>{receipt.paymentRef}</strong></div>
+                  <div className="receipt-detail-row receipt-detail-total"><span>Total paid</span><strong>{formatCurrency(receipt.amount)}</strong></div>
                 </div>
+                <p className="receipt-note">This confirms a successful donation processed through HelpFundMe. It is not a tax-deductibility certificate.</p>
               </div>
-
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 16, textAlign: 'center' }}>
-                Thank you for your generosity. This receipt confirms your donation via {receipt.platformName}.
-              </p>
-            </div>
+              <footer className="receipt-sheet-footer"><strong>HelpFundMe</strong><span>By Forgex Company Limited · Thank you for helping someone today.</span></footer>
+            </article>
           )}
         </div>
-        <div className="modal-footer">
+        <div className="modal-footer receipt-modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Close</button>
-          <button className="btn btn-primary" onClick={handlePrint} disabled={!receipt}>
-            <HiOutlinePrinter /> Print / Save PDF
+          <button className="btn btn-secondary" onClick={handleShare} disabled={!receipt || loading || sharing}>
+            {navigator.share ? <HiOutlineShare /> : <HiOutlineArrowDownTray />}{sharing ? 'Preparing...' : 'Share image'}
           </button>
+          <button className="btn btn-primary" onClick={() => window.print()} disabled={!receipt || loading}><HiOutlinePrinter /> Print / Save PDF</button>
         </div>
       </div>
     </div>

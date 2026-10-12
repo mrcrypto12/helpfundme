@@ -1381,6 +1381,96 @@ h1, h2, h3, h4, h5, h6 {
   border-top: 1px solid var(--border);
 }
 
+/* Donation receipt: intentionally solid colors for screen and print. */
+.receipt-modal { max-width: 720px; }
+.receipt-modal-body { padding: 18px; }
+.receipt-modal-footer { flex-wrap: wrap; }
+.receipt-modal-footer .btn { display: inline-flex; align-items: center; gap: 8px; }
+.receipt-sheet {
+  overflow: hidden;
+  border-radius: 18px;
+  background: #FFFFFF;
+  color: #18202D;
+  border: 1px solid #DCE5DE;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+.receipt-brand {
+  min-height: 104px;
+  padding: 22px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background: #103D2B;
+  color: #FFFFFF;
+}
+.receipt-brand-name { display: flex; align-items: center; gap: 13px; font: 800 1.55rem var(--font-heading); }
+.receipt-brand-name img { width: 48px; height: 48px; object-fit: contain; background: #FFFFFF; border-radius: 10px; padding: 3px; }
+.receipt-brand-label { font-size: 0.82rem; font-weight: 600; text-align: right; }
+.receipt-sheet-body { padding: 34px 38px 26px; }
+.receipt-success-icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #E4F4E7;
+  color: #1B8A2A;
+  font-size: 2rem;
+}
+.receipt-eyebrow { text-align: center; color: #1B8A2A; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 800; }
+.receipt-sheet-body h3 { margin: 8px 0 10px; text-align: center; font: 800 1.65rem var(--font-heading); color: #18202D; }
+.receipt-intro { max-width: 440px; margin: 0 auto 25px; text-align: center; color: #5C6478; font-size: 0.88rem; line-height: 1.55; }
+.receipt-total-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 20px; border-radius: 12px; background: #F2F8F3; border: 1px solid #D9ECDE; }
+.receipt-total-card span { color: #4D586A; font-size: 0.84rem; }
+.receipt-total-card strong { color: #176E26; font: 800 2.25rem var(--font-heading); }
+.receipt-total-card small { color: #4D586A; font-size: 0.76rem; }
+.receipt-details { margin-top: 28px; }
+.receipt-details-heading, .receipt-detail-row { display: flex; justify-content: space-between; gap: 24px; padding: 11px 0; }
+.receipt-details-heading { padding: 12px 14px; background: #F1F4F2; color: #18202D; font-size: 0.82rem; font-weight: 800; }
+.receipt-details-heading span:last-child { overflow-wrap: anywhere; text-align: right; }
+.receipt-detail-row { border-bottom: 1px solid #E9EDE9; font-size: 0.84rem; line-height: 1.4; }
+.receipt-detail-row span { flex: 0 0 35%; color: #5C6478; }
+.receipt-detail-row strong { color: #18202D; font-weight: 650; text-align: right; overflow-wrap: anywhere; }
+.receipt-detail-total { border-top: 2px solid #DCE5DE; border-bottom: 0; padding-top: 16px; font-weight: 800; }
+.receipt-detail-total span, .receipt-detail-total strong { color: #176E26; font-size: 1rem; }
+.receipt-note { color: #5C6478; font-size: 0.74rem; line-height: 1.5; margin-top: 18px; }
+.receipt-sheet-footer { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 20px; background: #103D2B; color: #FFFFFF; text-align: center; }
+.receipt-sheet-footer strong { font: 800 1.15rem var(--font-heading); }
+.receipt-sheet-footer span { font-size: 0.76rem; }
+
+@media (max-width: 600px) {
+  .receipt-modal-body { padding: 8px; }
+  .receipt-brand { padding: 16px; min-height: 80px; }
+  .receipt-brand-name { font-size: 1.18rem; }
+  .receipt-brand-name img { width: 38px; height: 38px; }
+  .receipt-brand-label { font-size: 0.7rem; }
+  .receipt-sheet-body { padding: 25px 18px 22px; }
+  .receipt-sheet-body h3 { font-size: 1.35rem; }
+  .receipt-total-card strong { font-size: 1.8rem; }
+  .receipt-modal-footer .btn { flex: 1 1 auto; justify-content: center; }
+}
+
+@media print {
+  @page { size: A4; margin: 12mm; }
+  html, body { background: #FFFFFF !important; }
+  body * { visibility: hidden !important; }
+  .receipt-sheet, .receipt-sheet * { visibility: visible !important; }
+  .receipt-sheet {
+    position: fixed;
+    inset: 0 auto auto 0;
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+    border: 0;
+    box-shadow: none;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
 /* ========================================
    File Upload / Dropzone
    ======================================== */
