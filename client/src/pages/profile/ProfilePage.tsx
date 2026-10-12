@@ -5,14 +5,6 @@ import { getInitials } from '../../utils/helpers';
 import { BADGE_META } from '../../utils/badges';
 import toast from 'react-hot-toast';
 import PhoneInput from '../../components/PhoneInput';
-import { HiHeart, HiUserGroup, HiStar, HiRocketLaunch } from 'react-icons/hi2';
-
-const badgeIcons = {
-  heart: HiHeart,
-  community: HiUserGroup,
-  star: HiStar,
-  rocket: HiRocketLaunch,
-};
 
 const ProfilePage: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -85,19 +77,28 @@ const ProfilePage: React.FC = () => {
       </div>
 
       {badges.length > 0 && (
-        <div className="achievement-badges" role="group" aria-label="Badges earned">
+        <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+          <h3 style={{ marginBottom: 12, fontSize: '0.95rem' }}>Badges Earned</h3>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {badges.map((b) => {
               const meta = BADGE_META[b];
               if (!meta) return null;
-              const Icon = badgeIcons[meta.icon as keyof typeof badgeIcons];
-              if (!Icon) return null;
               return (
-                <span key={b} className={`achievement-badge achievement-${meta.id}`} role="img" aria-label={`${meta.label}: ${meta.description}`} title={`${meta.label} — ${meta.description}`}>
-                  <Icon className="achievement-icon" aria-hidden="true" />
-                  <span className="achievement-medallion-dot" aria-hidden="true" />
-                </span>
+                <div
+                  key={b}
+                  title={meta.description}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                    padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--border)', minWidth: 90,
+                  }}
+                >
+                  <span style={{ fontSize: '1.5rem' }}>{meta.icon}</span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textAlign: 'center' }}>{meta.label}</span>
+                </div>
               );
             })}
+          </div>
         </div>
       )}
 

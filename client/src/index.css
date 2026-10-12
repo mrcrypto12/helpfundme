@@ -701,19 +701,6 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid rgba(255,255,255,0.06);
 }
 
-/* Earned activity badges */
-.achievement-badges { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 0 0 20px; }
-.achievement-badge { --badge-ink: #216C43; --badge-face: #D8F3E0; position: relative; flex: none; display: grid; place-items: center; width: 64px; height: 70px; color: var(--badge-ink); background: var(--badge-face); border: 2px solid var(--badge-ink); clip-path: polygon(50% 0, 90% 13%, 90% 69%, 50% 100%, 10% 69%, 10% 13%); }
-.achievement-community_helper { --badge-ink: #0D7780; --badge-face: #D8F3F1; }
-.achievement-angel_supporter { --badge-ink: #98631B; --badge-face: #FFF0C5; }
-.achievement-campaign_booster { --badge-ink: #365BB4; --badge-face: #E0E9FF; }
-:root:not([data-theme='light']) .achievement-first_supporter { --badge-ink: #75D69B; --badge-face: #17452C; }
-:root:not([data-theme='light']) .achievement-community_helper { --badge-ink: #6AD6D4; --badge-face: #164449; }
-:root:not([data-theme='light']) .achievement-angel_supporter { --badge-ink: #F2C86C; --badge-face: #4A371B; }
-:root:not([data-theme='light']) .achievement-campaign_booster { --badge-ink: #91ADFF; --badge-face: #28385F; }
-.achievement-icon { width: 30px; height: 30px; }
-.achievement-medallion-dot { position: absolute; bottom: 8px; left: calc(50% - 2px); width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
-
 /* ========================================
    Post Card
    ======================================== */
