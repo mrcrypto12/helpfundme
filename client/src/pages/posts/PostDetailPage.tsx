@@ -274,7 +274,7 @@ const PostDetailPage: React.FC = () => {
       {myInvite && myInvite.inviteStatus === 'pending' && (
         <div className="card" style={{ padding: 16, marginBottom: 16, borderColor: 'var(--gold)' }}>
           <p style={{ marginBottom: 10, fontSize: '0.9rem' }}>
-            🪧  {post.author?.name} invited you to help manage this campaign as a <strong>{myInvite.role}</strong>.
+              {post.author?.name} invited you to help manage this campaign as a <strong>{myInvite.role}</strong>.
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-success btn-sm" onClick={() => handleRespondInvite(true)}>Accept</button>
@@ -730,7 +730,7 @@ const PostDetailPage: React.FC = () => {
         <div className="modal-overlay" onClick={() => setShowHelpModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>🙋 Offer to Help</h2>
+              <h2> Offer to Help</h2>
               <button className="modal-close" onClick={() => setShowHelpModal(false)}>✕</button>
             </div>
             <div className="modal-body">

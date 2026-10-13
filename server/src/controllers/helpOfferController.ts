@@ -26,7 +26,7 @@ export const createHelpOffer = async (req: AuthRequest, res: Response): Promise<
     await Notification.create({
       recipient: post.author,
       type: 'system',
-      title: `🙋 ${req.user?.name} offered to help`,
+      title: ` ${req.user?.name} offered to help`,
       message: `Someone offered "${type}" support for "${post.title}"${message ? `: "${message}"` : ''}`,
       relatedPost: post._id,
       relatedUser: req.user?._id,

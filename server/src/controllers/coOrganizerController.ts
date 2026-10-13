@@ -44,7 +44,7 @@ export const inviteCoOrganizer = async (req: AuthRequest, res: Response): Promis
     await Notification.create({
       recipient: invitee._id,
       type: 'co_organizer_invite',
-      title: `🤝 ${req.user?.name} invited you as a co-organizer`,
+      title: ` ${req.user?.name} invited you as a co-organizer`,
       message: `You've been invited to help manage "${post.title}" as a ${role === 'editor' ? 'editor' : 'sharer'}.`,
       relatedPost: post._id,
       relatedUser: req.user?._id,
