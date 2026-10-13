@@ -8,7 +8,7 @@ interface CampaignTimelineProps {
 
 const TYPE_META: Record<string, { icon: string; label: string; color: string }> = {
   update: { icon: '📢', label: 'Update', color: 'var(--blue-light)' },
-  milestone: { icon: '🎯', label: 'Milestone', color: 'var(--gold)' },
+  milestone: { icon: '◉', label: 'Milestone', color: 'var(--gold)' },
   thank_you: { icon: '🙏', label: 'Thank You', color: 'var(--primary-light)' },
   completion: { icon: '🎉', label: 'Completed', color: 'var(--gold)' },
 };

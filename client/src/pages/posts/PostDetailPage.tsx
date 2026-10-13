@@ -18,10 +18,10 @@ import {
 
 const HELP_TYPES: { value: string; label: string; icon: string }[] = [
   { value: 'share', label: 'Share the campaign', icon: '📢' },
-  { value: 'items', label: 'Donate items/supplies', icon: '📦' },
-  { value: 'transport', label: 'Offer transport', icon: '🚗' },
-  { value: 'professional', label: 'Professional help', icon: '💼' },
-  { value: 'prayer', label: 'Prayers & encouragement', icon: '🙏' },
+  { value: 'items', label: 'Donate items/supplies', icon: '•' },
+  { value: 'transport', label: 'Offer transport', icon: '•' },
+  { value: 'professional', label: 'Professional help', icon: '•' },
+  { value: 'prayer', label: 'Prayers & encouragement', icon: '•' },
 ];
 
 const PostDetailPage: React.FC = () => {
@@ -476,7 +476,7 @@ const PostDetailPage: React.FC = () => {
 
             {isOwner && helpOffers.length > 0 && (
               <div className="detail-section">
-                <h3>🙋 Offers to Help</h3>
+                <h3>Offers to Help</h3>
                 {helpOffers.map((offer) => {
                   const meta = HELP_TYPES.find((h) => h.value === offer.type);
                   return (
