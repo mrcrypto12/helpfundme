@@ -18,10 +18,10 @@ import {
 
 const HELP_TYPES: { value: string; label: string; icon: string }[] = [
   { value: 'share', label: 'Share the campaign', icon: '📢' },
-  { value: 'items', label: 'Donate items/supplies', icon: '•' },
-  { value: 'transport', label: 'Offer transport', icon: '•' },
-  { value: 'professional', label: 'Professional help', icon: '•' },
-  { value: 'prayer', label: 'Prayers & encouragement', icon: '•' },
+  { value: 'items', label: 'Donate items/supplies', icon: '⚪' },
+  { value: 'transport', label: 'Offer transport', icon: '⚪' },
+  { value: 'professional', label: 'Professional help', icon: '⚪' },
+  { value: 'prayer', label: 'Prayers & encouragement', icon: '⚪' },
 ];
 
 const PostDetailPage: React.FC = () => {
@@ -274,7 +274,7 @@ const PostDetailPage: React.FC = () => {
       {myInvite && myInvite.inviteStatus === 'pending' && (
         <div className="card" style={{ padding: 16, marginBottom: 16, borderColor: 'var(--gold)' }}>
           <p style={{ marginBottom: 10, fontSize: '0.9rem' }}>
-            🤝 {post.author?.name} invited you to help manage this campaign as a <strong>{myInvite.role}</strong>.
+            🪧  {post.author?.name} invited you to help manage this campaign as a <strong>{myInvite.role}</strong>.
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-success btn-sm" onClick={() => handleRespondInvite(true)}>Accept</button>

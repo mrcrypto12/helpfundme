@@ -47,7 +47,7 @@ export const addCampaignUpdate = async (req: AuthRequest, res: Response): Promis
         type: type === 'thank_you' ? 'thank_you' : 'campaign_update',
         title: type === 'thank_you'
           ? ` ${req.user?.name} thanked you!`
-          : `📢 Update on "${post.title}"`,
+          : ` Update on "${post.title}"`,
         message: content.substring(0, 200),
         relatedPost: post._id,
         relatedUser: req.user?._id,
