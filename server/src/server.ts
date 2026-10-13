@@ -219,7 +219,7 @@ if (process.env.NODE_ENV === 'production' && process.env.SERVE_CLIENT !== 'false
         : `${CLIENT_URL}/logos.png`;
       const metadata = `
         <meta property="og:type" content="article" />
-        <meta property="og:site_name" content="HelpFundMe · Forgex Company Limited" />
+        <meta property="og:site_name" content="HelpFundMe · Forgetech Company Limited" />
         <meta property="og:title" content="${title}" />
         <meta property="og:description" content="${description}" />
         <meta property="og:image" content="${escapeHtmlAttribute(firstImage)}" />

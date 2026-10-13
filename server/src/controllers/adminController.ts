@@ -179,7 +179,7 @@ export const updatePostStatus = async (req: AuthRequest, res: Response): Promise
       if (donorIds.length) await Notification.insertMany(donorIds.map((recipient) => ({ recipient, type: 'campaign_suspended', title: 'Campaign review update', message: `The campaign "${post.title}" has been paused while a confidential review is completed. We will provide further updates when appropriate.`, relatedPost: post._id })));
     }
     const author = await User.findById(existingPost.author?._id || existingPost.author);
-    if (author?.email && isResendEnabled()) sendTransactionalEmail({ to: author.email, subject: `Campaign ${status}: ${post.title}`, html: `<p>Hello ${author.name},</p><p>Your campaign <strong>${post.title}</strong> is now <strong>${status}</strong>.</p><p>${adminNotes || declineReason || 'Sign in to HelpFundMe for details.'}</p><p>Forgex Company Limited · HelpFundMe</p>` }).catch((error) => console.warn('Campaign email failed:', error.message));
+    if (author?.email && isResendEnabled()) sendTransactionalEmail({ to: author.email, subject: `Campaign ${status}: ${post.title}`, html: `<p>Hello ${author.name},</p><p>Your campaign <strong>${post.title}</strong> is now <strong>${status}</strong>.</p><p>${adminNotes || declineReason || 'Sign in to HelpFundMe for details.'}</p><p>Forgetech Company Limited · HelpFundMe</p>` }).catch((error) => console.warn('Campaign email failed:', error.message));
 
     res.json({ message: `Post ${status}`, post });
   } catch (error) {

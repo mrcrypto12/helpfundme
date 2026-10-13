@@ -117,7 +117,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                   fontSize: '0.68rem',
                   fontWeight: 600,
                 }}>
-                  Forgex Company Limited
+                  Forgetech Company Limited
                 </span>
               </div>
             )}

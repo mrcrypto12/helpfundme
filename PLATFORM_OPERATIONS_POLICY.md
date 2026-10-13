@@ -1,6 +1,6 @@
 # HelpFundMe Internal Operations Policy
 
-Version: 2026-09-20. Owner: Forgex Company Limited. This operational draft must be reviewed by qualified Ghanaian counsel and the company’s compliance lead before launch.
+Version: 2026-09-20. Owner: Forgetech Company Limited. This operational draft must be reviewed by qualified Ghanaian counsel and the company’s compliance lead before launch.
 
 ## Campaign approval and rejection
 

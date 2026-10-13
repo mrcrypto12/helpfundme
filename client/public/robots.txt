@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /auth/
+Disallow: /verify-email
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /profile
+Disallow: /my-posts
+Disallow: /donations
+Disallow: /posts/create
+
+Sitemap: https://helpfundme.forgetechgh.com/sitemap.xml

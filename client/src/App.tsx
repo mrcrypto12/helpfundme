@@ -4,6 +4,8 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LegalConsentModal, { TERMS_VERSION } from './components/LegalConsentModal';
 import api from './services/api';
+import HomePage from './pages/HomePage';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 import Sidebar from './components/layout/Sidebar';
 import Navbar from './components/layout/Navbar';
@@ -92,6 +94,7 @@ const LegalAcceptanceGate: React.FC = () => {
 const App: React.FC = () => {
   return (
     <BrowserRouter>
+      <ThemeProvider>
       <AuthProvider>
         <Toaster
           position="top-right"
@@ -106,6 +109,7 @@ const App: React.FC = () => {
         <LegalAcceptanceGate />
 
         <Routes>
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
@@ -134,10 +138,10 @@ const App: React.FC = () => {
             </Route>
           </Route>
 
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 };

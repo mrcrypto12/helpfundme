@@ -77,7 +77,7 @@ export const createReceiptShareImage = async (receipt: IReceipt): Promise<Blob> 
   ctx.fillStyle = '#5C6478';
   ctx.font = '26px Arial, sans-serif';
   ctx.fillText(formatDate(receipt.date), 540, 957);
-  ctx.fillText('HelpFundMe · Forgex Company Limited', 540, 1012);
+  ctx.fillText('HelpFundMe · Forgetech Company Limited', 540, 1012);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Could not create share image')), 'image/png');
